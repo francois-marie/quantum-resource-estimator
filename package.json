@@ -2,13 +2,16 @@
   "name": "quantum-resource-estimator",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://francois-marie.github.io/quantum-resource-estimator",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "chart.js": "^4.4.8",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "tailwindcss": "^3.3.0",
@@ -17,7 +20,10 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test"
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -40,6 +46,7 @@
   "devDependencies": {
     "@craco/craco": "^7.1.0",
     "autoprefixer": "^10.4.14",
+    "gh-pages": "^6.3.0",
     "postcss": "^8.4.21"
   }
 }
