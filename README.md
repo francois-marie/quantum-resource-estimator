@@ -1,70 +1,108 @@
-# Getting Started with Create React App
+# Quantum Error Correction Resource Estimator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+An interactive web tool for estimating quantum computing resource requirements with different error correction codes. This tool helps researchers and engineers understand the physical qubit requirements for fault-tolerant quantum computation across different regimes.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Multiple Error Correction Codes:**
+  - Surface Code
+  - Hypergraph Product Code
+  - Lifted Product Code
 
-### `npm start`
+- **Interactive Calculator:**
+  - Adjustable parameters for physical error rate (p)
+  - Target logical error rate (ε_L)
+  - Number of physical and logical qubits
+  - Real-time calculation of code distance and resource requirements
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Comprehensive Visualization:**
+  - Interactive plot showing required physical qubits vs error rate
+  - Logarithmic scales for better visualization of wide parameter ranges
+  - Tooltips for detailed information
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Quantum Computing Regimes:**
+  - KiloQuop (ε_L = 10^-3)
+  - MegaQuop (ε_L = 10^-6)
+  - GigaQuop (ε_L = 10^-9)
+  - TeraQuop (ε_L = 10^-12)
+  - PetaQuop (ε_L = 10^-15)
 
-### `npm test`
+## Formulas and References
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Surface Code
+- LFR(surface) = 0.03k(p/0.011)^⌈⌊√(n/k)⌋/2⌉
+- Threshold ≈ 1.1%
+- Reference: [Surface code quantum communication (Fowler et al., 2010)](https://arxiv.org/abs/0910.4074)
 
-### `npm run build`
+### Hypergraph Product Code
+- LFR(HGP) = 0.07(p/0.006)^(0.47n^0.27)
+- Threshold ≈ 0.6%
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Lifted Product Code
+- LFR(LP) = 2.3(p/0.0066)^(0.11n^0.60)
+- Threshold ≈ 0.66%
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Reference for HGP and LP codes: [Constant-Overhead Fault-Tolerant Quantum Computation with Reconfigurable Atom Arrays (Xu et al., 2023)](https://arxiv.org/abs/2308.08648v1)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Getting Started
 
-### `npm run eject`
+### Prerequisites
+- Node.js (v14 or higher)
+- npm (v6 or higher)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Installation
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Clone the repository:
+\`\`\`bash
+git clone https://github.com/francois-marie/quantum-resource-estimator.git
+cd quantum-resource-estimator
+\`\`\`
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+2. Install dependencies:
+\`\`\`bash
+npm install
+\`\`\`
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+3. Start the development server:
+\`\`\`bash
+npm start
+\`\`\`
 
-## Learn More
+The application will be available at [http://localhost:3000](http://localhost:3000)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Deployment
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+The application is deployed using GitHub Pages. To deploy updates:
 
-### Code Splitting
+\`\`\`bash
+npm run deploy
+\`\`\`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Visit the live version at: [https://francois-marie.github.io/quantum-resource-estimator](https://francois-marie.github.io/quantum-resource-estimator)
 
-### Analyzing the Bundle Size
+## Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+This is a work in progress. If you find bugs or have suggestions for improvements, please:
 
-### Making a Progressive Web App
+1. Check existing issues or create a new one
+2. Fork the repository
+3. Create a new branch for your feature
+4. Submit a pull request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## License
 
-### Advanced Configuration
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Acknowledgments
 
-### Deployment
+- Inspired by discussions in [Quantum Computing Report](https://quantumcomputingreport.com/nisq-versus-ftqc-in-the-2025-2029-timeframe/)
+- Built with React and Chart.js
+- Styling with Tailwind CSS
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## Author
 
-### `npm run build` fails to minify
+François-Marie Le Régent
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Status
+
+🚧 This project is under active development. Features and calculations are being refined and verified. Please create issues on GitHub if you find any bugs or have suggestions for improvements.
