@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/quantum-resource-estimator/static/css/main.1c548c20.css",
+    "main.js": "/quantum-resource-estimator/static/js/main.41e4fec8.js",
+    "static/js/453.6cb21527.chunk.js": "/quantum-resource-estimator/static/js/453.6cb21527.chunk.js",
+    "index.html": "/quantum-resource-estimator/index.html",
+    "main.1c548c20.css.map": "/quantum-resource-estimator/static/css/main.1c548c20.css.map",
+    "main.41e4fec8.js.map": "/quantum-resource-estimator/static/js/main.41e4fec8.js.map",
+    "453.6cb21527.chunk.js.map": "/quantum-resource-estimator/static/js/453.6cb21527.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.1c548c20.css",
+    "static/js/main.41e4fec8.js"
+  ]
+}
