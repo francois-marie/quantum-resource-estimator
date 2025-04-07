@@ -32,6 +32,21 @@ const debounce = (func, wait) => {
   };
 };
 
+// Function to parse URL parameters
+const getUrlParams = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const params = {};
+  for (const [key, value] of searchParams.entries()) {
+    // Convert string values to appropriate types
+    if (key === 'code') {
+      params[key] = value;
+    } else {
+      params[key] = parseFloat(value);
+    }
+  }
+  return params;
+};
+
 const QuantumCalculator = () => {
   const [inputs, setInputs] = useState({
     code: 'surface',
