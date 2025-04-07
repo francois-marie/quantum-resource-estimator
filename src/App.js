@@ -237,50 +237,6 @@ const QuantumCalculator = () => {
     });
   };
   
-  // Auto-calculate results when inputs change
-  useEffect(() => {
-    calculateResults();
-  }, [inputs]);
-
-  // Update inputs when results change
-  useEffect(() => {
-    if (results.d) {
-      setInputs(prev => ({
-        ...prev,
-        d: results.d
-      }));
-    }
-  }, [results]);
-  
-  const calculateResults = () => {
-    setError('');
-    
-    try {
-      // Get the selected code
-      const selectedCode = codeLibrary[inputs.code];
-      if (!selectedCode) {
-        setError(`Code "${inputs.code}" is not supported.`);
-        return;
-      }
-      
-      // Create normalized parameters for calculation
-      const params = {
-        ...inputs,
-        p: parseFloat(inputs.p),
-        epsilon_L: parseFloat(inputs.epsilon_L),
-        n: parseInt(inputs.n),
-        k: parseInt(inputs.k),
-        d: parseInt(inputs.d)
-      };
-      
-      // Calculate the results
-      const calculatedResults = selectedCode.calculateParams(params);
-      setResults(calculatedResults);
-    } catch (e) {
-      setError(`Calculation error: ${e.message}`);
-    }
-  };
-  
   // Function to generate plot data
   const generatePlotData = (code, epsilon_L, k = 1) => {
     const selectedCode = codeLibrary[code];
