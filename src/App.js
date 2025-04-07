@@ -532,9 +532,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-3);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-3);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -568,9 +577,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-6);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-6);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -604,9 +622,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-9);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-9);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -639,9 +666,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-12);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-12);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -675,9 +711,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-15);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-15);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
