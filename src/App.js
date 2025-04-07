@@ -426,6 +426,12 @@ const QuantumCalculator = () => {
                 </div>
               )}
               
+              {results.n && results.n_ancilla && (
+                <div className="border-b pb-2">
+                  <span className="font-medium">Total Qubits (n+n_a):</span> {Math.ceil(results.n + results.n_ancilla).toLocaleString()}
+                </div>
+              )}
+              
               {results.k && (
                 <div className="border-b pb-2">
                   <span className="font-medium">Logical Qubits (k):</span> {results.k}
