@@ -106,8 +106,9 @@ const QuantumCalculator = () => {
         // Calculate code distance based on number of data qubits per logical qubit
         result.d = Math.floor(Math.sqrt(params.n / params.k));
         
-        // Calculate number of ancilla qubits
-        result.n_ancilla = Math.pow(result.d - 1, 2) + 2 * (result.d - 1);
+        // Calculate number of ancilla qubits for all logical qubits
+        // Each logical qubit requires (d-1)^2 + 2(d-1) ancilla qubits
+        result.n_ancilla = params.k * (Math.pow(result.d - 1, 2) + 2 * (result.d - 1));
         
         // Calculate logical error rate
         result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, result.d / 2);
