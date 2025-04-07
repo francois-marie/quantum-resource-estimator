@@ -153,6 +153,43 @@ const QuantumCalculator = () => {
     }
   };
   
+  // Memoize calculateResults to prevent unnecessary recalculations
+  const calculateResults = useCallback(() => {
+    setError('');
+    
+    try {
+      const selectedCode = codeLibrary[inputs.code];
+      if (!selectedCode) {
+        setError(`Code "${inputs.code}" is not supported.`);
+        return;
+      }
+      
+      const params = {
+        ...inputs,
+        p: parseFloat(inputs.p),
+        epsilon_L: parseFloat(inputs.epsilon_L),
+        n: parseInt(inputs.n),
+        k: parseInt(inputs.k),
+        d: parseInt(inputs.d)
+      };
+      
+      const calculatedResults = selectedCode.calculateParams(params);
+      setResults(calculatedResults);
+    } catch (e) {
+      setError(`Calculation error: ${e.message}`);
+    }
+  }, [inputs]);
+
+  // Load initial state from URL parameters only once
+  useEffect(() => {
+    const urlParams = getUrlParams();
+    if (Object.keys(urlParams).length > 0) {
+      setInputs(prev => ({
+        ...prev,
+        ...urlParams
+      }));
+    }
+  }, []); // Empty dependency array means this runs once on mount
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
     
