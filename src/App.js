@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -22,6 +22,42 @@ ChartJS.register(
   Legend,
   LogarithmicScale
 );
+
+// Debounce function
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+// Function to parse URL parameters
+const getUrlParams = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const params = {};
+  for (const [key, value] of searchParams.entries()) {
+    // Convert string values to appropriate types
+    if (key === 'code') {
+      params[key] = value;
+    } else {
+      params[key] = parseFloat(value);
+    }
+  }
+  return params;
+};
+
+// Function to update URL with current state
+const updateUrl = debounce((params) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.set(key, value.toString());
+    }
+  });
+  const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+  window.history.replaceState({}, '', newUrl);
+}, 1000); // Debounce URL updates by 1 second
 
 const QuantumCalculator = () => {
   const [inputs, setInputs] = useState({
@@ -117,6 +153,64 @@ const QuantumCalculator = () => {
     }
   };
   
+  // Memoize calculateResults to prevent unnecessary recalculations
+  const calculateResults = useCallback(() => {
+    setError('');
+    
+    try {
+      const selectedCode = codeLibrary[inputs.code];
+      if (!selectedCode) {
+        setError(`Code "${inputs.code}" is not supported.`);
+        return;
+      }
+      
+      const params = {
+        ...inputs,
+        p: parseFloat(inputs.p),
+        epsilon_L: parseFloat(inputs.epsilon_L),
+        n: parseInt(inputs.n),
+        k: parseInt(inputs.k),
+        d: parseInt(inputs.d)
+      };
+      
+      const calculatedResults = selectedCode.calculateParams(params);
+      setResults(calculatedResults);
+    } catch (e) {
+      setError(`Calculation error: ${e.message}`);
+    }
+  }, [inputs]);
+
+  // Load initial state from URL parameters only once
+  useEffect(() => {
+    const urlParams = getUrlParams();
+    if (Object.keys(urlParams).length > 0) {
+      setInputs(prev => ({
+        ...prev,
+        ...urlParams
+      }));
+    }
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Update URL when inputs change
+  useEffect(() => {
+    updateUrl(inputs);
+  }, [inputs]); // Only depends on inputs
+
+  // Calculate results when inputs change
+  useEffect(() => {
+    calculateResults();
+  }, [calculateResults]); // Only depends on the memoized calculateResults function
+
+  // Update code distance in inputs when results change
+  useEffect(() => {
+    if (results.d && results.d !== inputs.d) {
+      setInputs(prev => ({
+        ...prev,
+        d: results.d
+      }));
+    }
+  }, [results.d]); // Only depends on results.d
+  
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
     
@@ -141,50 +235,6 @@ const QuantumCalculator = () => {
       
       return newInputs;
     });
-  };
-  
-  // Auto-calculate results when inputs change
-  useEffect(() => {
-    calculateResults();
-  }, [inputs]);
-
-  // Update inputs when results change
-  useEffect(() => {
-    if (results.d) {
-      setInputs(prev => ({
-        ...prev,
-        d: results.d
-      }));
-    }
-  }, [results]);
-  
-  const calculateResults = () => {
-    setError('');
-    
-    try {
-      // Get the selected code
-      const selectedCode = codeLibrary[inputs.code];
-      if (!selectedCode) {
-        setError(`Code "${inputs.code}" is not supported.`);
-        return;
-      }
-      
-      // Create normalized parameters for calculation
-      const params = {
-        ...inputs,
-        p: parseFloat(inputs.p),
-        epsilon_L: parseFloat(inputs.epsilon_L),
-        n: parseInt(inputs.n),
-        k: parseInt(inputs.k),
-        d: parseInt(inputs.d)
-      };
-      
-      // Calculate the results
-      const calculatedResults = selectedCode.calculateParams(params);
-      setResults(calculatedResults);
-    } catch (e) {
-      setError(`Calculation error: ${e.message}`);
-    }
   };
   
   // Function to generate plot data
@@ -482,9 +532,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-3);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-3);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -518,9 +577,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-6);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-6);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -554,9 +622,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-9);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-9);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -589,9 +666,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-12);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-12);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
@@ -625,9 +711,18 @@ const QuantumCalculator = () => {
               const result = findRequiredN(inputs.code, p, 1e-15);
               if (!result) return null;
               const d_approx = Math.floor(Math.sqrt(result.n));
+              const url = new URL(window.location.href);
+              url.searchParams.set('code', inputs.code);
+              url.searchParams.set('p', p);
+              url.searchParams.set('epsilon_L', 1e-15);
+              url.searchParams.set('n', Math.ceil(result.n));
+              url.searchParams.set('k', 1);
+              url.searchParams.set('d', d_approx);
               return (
-                <tr key={p}>
-                  <td className="border px-4 py-2">{p.toExponential(1)}</td>
+                <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
+                  <td className="border px-4 py-2 text-blue-600 hover:underline">
+                    <a href={url.toString()}>{p.toExponential(1)}</a>
+                  </td>
                   <td className="border px-4 py-2">{Math.ceil(result.n)}</td>
                   <td className="border px-4 py-2">{result.d}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
