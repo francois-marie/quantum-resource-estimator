@@ -47,6 +47,18 @@ const getUrlParams = () => {
   return params;
 };
 
+// Function to update URL with current state
+const updateUrl = debounce((params) => {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.set(key, value.toString());
+    }
+  });
+  const newUrl = `${window.location.pathname}?${searchParams.toString()}`;
+  window.history.replaceState({}, '', newUrl);
+}, 1000); // Debounce URL updates by 1 second
+
 const QuantumCalculator = () => {
   const [inputs, setInputs] = useState({
     code: 'surface',
