@@ -23,6 +23,15 @@ ChartJS.register(
   LogarithmicScale
 );
 
+// Debounce function
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
 const QuantumCalculator = () => {
   const [inputs, setInputs] = useState({
     code: 'surface',
