@@ -190,6 +190,27 @@ const QuantumCalculator = () => {
       }));
     }
   }, []); // Empty dependency array means this runs once on mount
+
+  // Update URL when inputs change
+  useEffect(() => {
+    updateUrl(inputs);
+  }, [inputs]); // Only depends on inputs
+
+  // Calculate results when inputs change
+  useEffect(() => {
+    calculateResults();
+  }, [calculateResults]); // Only depends on the memoized calculateResults function
+
+  // Update code distance in inputs when results change
+  useEffect(() => {
+    if (results.d && results.d !== inputs.d) {
+      setInputs(prev => ({
+        ...prev,
+        d: results.d
+      }));
+    }
+  }, [results.d]); // Only depends on results.d
+  
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
     
