@@ -362,16 +362,16 @@ const QuantumCalculator = () => {
           <div className="space-y-4">
             {Object.entries(sliderRanges).map(([name, range]) => {
               // Skip the distance slider as it's calculated
-              if (name === 'd') return null;
+              // Also skip epsilon_L as it's moved to the plot section
+              if (name === 'd' || name === 'epsilon_L') return null;
               
               return (
                 <div key={name} className="mb-4">
                   <label className="block text-sm font-medium mb-1">
                     {name === 'p' ? 'Physical Error Probability (p)' :
-                     name === 'epsilon_L' ? 'Target Logical Error Rate (ε_L)' :
                      name === 'n' ? 'Number of Physical Qubits (n)' :
                      name === 'k' ? 'Number of Logical Qubits (k)' :
-                     'Code Distance (d)'}
+                     name}
                   </label>
                   <div className="flex items-center space-x-4">
                     <input
@@ -393,19 +393,6 @@ const QuantumCalculator = () => {
                 </div>
               );
             })}
-            
-            {/* Display calculated code distance */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-1">
-                Code Distance (d) - Calculated
-              </label>
-              <input
-                type="text"
-                value={inputs.d}
-                readOnly
-                className="w-full p-1 border rounded text-sm bg-gray-100"
-              />
-            </div>
           </div>
         </div>
         
@@ -472,6 +459,30 @@ const QuantumCalculator = () => {
       
       <div className="bg-white p-4 rounded shadow mt-6">
         <h2 className="text-xl font-semibold mb-4">Required Physical Qubits vs Error Rate</h2>
+        
+        <div className="mb-6">
+          <label className="block text-sm font-medium mb-1">
+            Target Logical Error Rate (ε_L)
+          </label>
+          <div className="flex items-center space-x-4">
+            <input
+              type="range"
+              name="epsilon_L"
+              min="0"
+              max="100"
+              value={toLogScale(inputs.epsilon_L, sliderRanges.epsilon_L.min, sliderRanges.epsilon_L.max)}
+              onChange={handleInputChange}
+              className="w-2/3"
+            />
+            <input
+              type="text"
+              value={inputs.epsilon_L.toExponential(2)}
+              readOnly
+              className="w-1/3 p-1 border rounded text-sm"
+            />
+          </div>
+        </div>
+        
         <div className="h-96">
           <Line
             data={{
@@ -538,14 +549,12 @@ const QuantumCalculator = () => {
             {[5e-3, 1e-3, 1e-4, 1e-5].map(p => {
               const result = findRequiredN(inputs.code, p, 1e-3);
               if (!result) return null;
-              const d_approx = Math.floor(Math.sqrt(result.n));
               const url = new URL(window.location.href);
               url.searchParams.set('code', inputs.code);
               url.searchParams.set('p', p);
               url.searchParams.set('epsilon_L', 1e-3);
               url.searchParams.set('n', Math.ceil(result.n));
               url.searchParams.set('k', 1);
-              url.searchParams.set('d', d_approx);
               return (
                 <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
                   <td className="border px-4 py-2 text-blue-600 hover:underline">
@@ -556,7 +565,7 @@ const QuantumCalculator = () => {
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n + (result.n_ancilla || 0))}</td>
                   <td className="border px-4 py-2">{result.epsilon_L.toExponential(1)}</td>
-                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {d_approx}]]</td>
+                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {result.d}]]</td>
                   <td className="border px-4 py-2">{(1/Math.ceil(result.n)).toExponential(2)}</td>
                 </tr>
               );
@@ -583,14 +592,12 @@ const QuantumCalculator = () => {
             {[5e-3, 1e-3, 1e-4, 1e-5].map(p => {
               const result = findRequiredN(inputs.code, p, 1e-6);
               if (!result) return null;
-              const d_approx = Math.floor(Math.sqrt(result.n));
               const url = new URL(window.location.href);
               url.searchParams.set('code', inputs.code);
               url.searchParams.set('p', p);
               url.searchParams.set('epsilon_L', 1e-6);
               url.searchParams.set('n', Math.ceil(result.n));
               url.searchParams.set('k', 1);
-              url.searchParams.set('d', d_approx);
               return (
                 <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
                   <td className="border px-4 py-2 text-blue-600 hover:underline">
@@ -601,7 +608,7 @@ const QuantumCalculator = () => {
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n + (result.n_ancilla || 0))}</td>
                   <td className="border px-4 py-2">{result.epsilon_L.toExponential(1)}</td>
-                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {d_approx}]]</td>
+                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {result.d}]]</td>
                   <td className="border px-4 py-2">{(1/Math.ceil(result.n)).toExponential(2)}</td>
                 </tr>
               );
@@ -628,14 +635,12 @@ const QuantumCalculator = () => {
             {[5e-3, 1e-3, 1e-4, 1e-5].map(p => {
               const result = findRequiredN(inputs.code, p, 1e-9);
               if (!result) return null;
-              const d_approx = Math.floor(Math.sqrt(result.n));
               const url = new URL(window.location.href);
               url.searchParams.set('code', inputs.code);
               url.searchParams.set('p', p);
               url.searchParams.set('epsilon_L', 1e-9);
               url.searchParams.set('n', Math.ceil(result.n));
               url.searchParams.set('k', 1);
-              url.searchParams.set('d', d_approx);
               return (
                 <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
                   <td className="border px-4 py-2 text-blue-600 hover:underline">
@@ -646,7 +651,7 @@ const QuantumCalculator = () => {
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n + (result.n_ancilla || 0))}</td>
                   <td className="border px-4 py-2">{result.epsilon_L.toExponential(1)}</td>
-                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {d_approx}]]</td>
+                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {result.d}]]</td>
                   <td className="border px-4 py-2">{(1/Math.ceil(result.n)).toExponential(2)}</td>
                 </tr>
               );
@@ -672,14 +677,12 @@ const QuantumCalculator = () => {
             {[5e-3, 1e-3, 1e-4, 1e-5].map(p => {
               const result = findRequiredN(inputs.code, p, 1e-12);
               if (!result) return null;
-              const d_approx = Math.floor(Math.sqrt(result.n));
               const url = new URL(window.location.href);
               url.searchParams.set('code', inputs.code);
               url.searchParams.set('p', p);
               url.searchParams.set('epsilon_L', 1e-12);
               url.searchParams.set('n', Math.ceil(result.n));
               url.searchParams.set('k', 1);
-              url.searchParams.set('d', d_approx);
               return (
                 <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
                   <td className="border px-4 py-2 text-blue-600 hover:underline">
@@ -690,7 +693,7 @@ const QuantumCalculator = () => {
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n + (result.n_ancilla || 0))}</td>
                   <td className="border px-4 py-2">{result.epsilon_L.toExponential(1)}</td>
-                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {d_approx}]]</td>
+                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {result.d}]]</td>
                   <td className="border px-4 py-2">{(1/Math.ceil(result.n)).toExponential(2)}</td>
                 </tr>
               );
@@ -717,14 +720,12 @@ const QuantumCalculator = () => {
             {[5e-3, 1e-3, 1e-4, 1e-5].map(p => {
               const result = findRequiredN(inputs.code, p, 1e-15);
               if (!result) return null;
-              const d_approx = Math.floor(Math.sqrt(result.n));
               const url = new URL(window.location.href);
               url.searchParams.set('code', inputs.code);
               url.searchParams.set('p', p);
               url.searchParams.set('epsilon_L', 1e-15);
               url.searchParams.set('n', Math.ceil(result.n));
               url.searchParams.set('k', 1);
-              url.searchParams.set('d', d_approx);
               return (
                 <tr key={p} className="hover:bg-gray-50 cursor-pointer" onClick={() => window.location.href = url.toString()}>
                   <td className="border px-4 py-2 text-blue-600 hover:underline">
@@ -735,7 +736,7 @@ const QuantumCalculator = () => {
                   <td className="border px-4 py-2">{Math.ceil(result.n_ancilla || 0)}</td>
                   <td className="border px-4 py-2">{Math.ceil(result.n + (result.n_ancilla || 0))}</td>
                   <td className="border px-4 py-2">{result.epsilon_L.toExponential(1)}</td>
-                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {d_approx}]]</td>
+                  <td className="border px-4 py-2">[[{Math.ceil(result.n)}, 1, {result.d}]]</td>
                   <td className="border px-4 py-2">{(1/Math.ceil(result.n)).toExponential(2)}</td>
                 </tr>
               );
