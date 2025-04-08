@@ -179,7 +179,7 @@ const QuantumCalculator = () => {
     } catch (e) {
       setError(`Calculation error: ${e.message}`);
     }
-  }, [inputs]);
+  }, [inputs, codeLibrary]);
 
   // Load initial state from URL parameters only once
   useEffect(() => {
@@ -210,7 +210,7 @@ const QuantumCalculator = () => {
         d: results.d
       }));
     }
-  }, [results.d]); // Only depends on results.d
+  }, [results.d, inputs.d]); // Added inputs.d to dependencies
   
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
@@ -256,8 +256,8 @@ const QuantumCalculator = () => {
       let nMin = 10;
       let nMax = 1e6;
       let n = nMin;
-      let bestN = nMin;
       let minDiff = Infinity;
+      let bestResult = null;
 
       // Binary search for the right n
       for (let j = 0; j < 20; j++) {
@@ -267,7 +267,7 @@ const QuantumCalculator = () => {
 
         if (diff < minDiff) {
           minDiff = diff;
-          bestN = n;
+          bestResult = result;
         }
 
         if (result.epsilon_L > epsilon_L) {
@@ -277,7 +277,7 @@ const QuantumCalculator = () => {
         }
       }
 
-      nValues.push(bestN);
+      nValues.push(bestResult ? bestResult.n : n);
     }
 
     return {
