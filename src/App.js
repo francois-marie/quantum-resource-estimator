@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -94,8 +94,8 @@ const QuantumCalculator = () => {
     k: { min: 1, max: 1000 }
   };
   
-  // Define code parameters and formulas
-  const codeLibrary = {
+  // Define code parameters and formulas - memoized to prevent useCallback dependency issues
+  const codeLibrary = useMemo(() => ({
     surface: {
       name: 'Surface Code',
       threshold: 0.011, // 1.1%
@@ -152,7 +152,7 @@ const QuantumCalculator = () => {
         return result;
       }
     }
-  };
+  }), []); // Empty dependency array since this object is static
   
   // Memoize calculateResults to prevent unnecessary recalculations
   const calculateResults = useCallback(() => {
@@ -293,7 +293,6 @@ const QuantumCalculator = () => {
 
     let nMin = 10;
     let nMax = 1e6;
-    let bestN = nMin;
     let minDiff = Infinity;
     let bestResult = null;
 
@@ -305,7 +304,6 @@ const QuantumCalculator = () => {
 
       if (diff < minDiff) {
         minDiff = diff;
-        bestN = n;
         bestResult = result;
       }
 
