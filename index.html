@@ -8,7 +8,8 @@
     <!-- Canonical URL for SEO -->
     <link rel="canonical" href="https://francoismarieleregent.xyz/quantum-resource-estimator/">
     
-    <!-- Meta refresh will be set by JavaScript to preserve URL parameters -->
+    <!-- Immediate meta refresh fallback (will be overridden by JavaScript if parameters exist) -->
+    <meta http-equiv="refresh" content="1; url=https://francoismarieleregent.xyz/quantum-resource-estimator/">
     
     <style>
         body {
@@ -60,6 +61,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .debug {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-top: 1rem;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
@@ -71,34 +78,79 @@
         <a href="https://francoismarieleregent.xyz/quantum-resource-estimator/" id="manual-redirect">
             Go to new site manually
         </a>
+        <div class="debug" id="debug-info">
+            Preparing redirect...
+        </div>
     </div>
 
     <script>
-        // Get URL parameters and build redirect URL
-        const urlParams = window.location.search;
-        const redirectUrl = 'https://francoismarieleregent.xyz/quantum-resource-estimator/' + urlParams;
-        
-        // Set meta refresh with parameters
-        const metaRefresh = document.createElement('meta');
-        metaRefresh.setAttribute('http-equiv', 'refresh');
-        metaRefresh.setAttribute('content', '0; url=' + redirectUrl);
-        document.head.appendChild(metaRefresh);
-        
-        // Update manual redirect link with parameters
-        document.getElementById('manual-redirect').href = redirectUrl;
-        
-        // JavaScript redirect as backup
-        setTimeout(function() {
-            window.location.href = redirectUrl;
-        }, 1000);
+        try {
+            console.log('Redirect script starting...');
+            
+            // Get URL parameters
+            const urlParams = window.location.search;
+            const baseUrl = 'https://francoismarieleregent.xyz/quantum-resource-estimator/';
+            const redirectUrl = baseUrl + urlParams;
+            
+            console.log('Original URL:', window.location.href);
+            console.log('URL Parameters:', urlParams);
+            console.log('Redirect URL:', redirectUrl);
+            
+            // Update debug info
+            document.getElementById('debug-info').innerHTML = 
+                'Redirecting to: ' + redirectUrl;
+            
+            // Update manual redirect link
+            const manualLink = document.getElementById('manual-redirect');
+            if (manualLink) {
+                manualLink.href = redirectUrl;
+                console.log('Updated manual link');
+            }
+            
+            // If we have URL parameters, update the meta refresh
+            if (urlParams) {
+                console.log('Updating meta refresh with parameters');
+                const existingMeta = document.querySelector('meta[http-equiv="refresh"]');
+                if (existingMeta) {
+                    existingMeta.setAttribute('content', '0; url=' + redirectUrl);
+                }
+            }
+            
+            // Immediate redirect attempt
+            console.log('Attempting immediate redirect...');
+            window.location.replace(redirectUrl);
+            
+            // Fallback redirect after 500ms
+            setTimeout(function() {
+                console.log('Fallback redirect 1 (500ms)...');
+                window.location.href = redirectUrl;
+            }, 500);
+            
+            // Second fallback after 1500ms
+            setTimeout(function() {
+                console.log('Fallback redirect 2 (1500ms)...');
+                window.location.assign(redirectUrl);
+            }, 1500);
+            
+            // Third fallback after 3000ms
+            setTimeout(function() {
+                console.log('Final fallback redirect (3000ms)...');
+                window.open(redirectUrl, '_self');
+            }, 3000);
 
-        // Track the redirect with PostHog if it exists
-        if (typeof posthog !== 'undefined') {
-            posthog.capture('github_pages_redirect', {
-                from: 'github-pages',
-                to: 'francoismarieleregent.xyz/quantum-resource-estimator',
-                preserved_params: urlParams
-            });
+            // Track the redirect with PostHog if it exists
+            if (typeof posthog !== 'undefined') {
+                posthog.capture('github_pages_redirect', {
+                    from: 'github-pages',
+                    to: 'francoismarieleregent.xyz/quantum-resource-estimator',
+                    preserved_params: urlParams
+                });
+            }
+            
+        } catch (error) {
+            console.error('Redirect script error:', error);
+            document.getElementById('debug-info').innerHTML = 
+                'Error: ' + error.message + '<br>Please click the manual link above.';
         }
     </script>
 </body>
