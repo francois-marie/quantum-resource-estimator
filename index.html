@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirecting...</title>
     
-    <!-- Multiple redirect methods for maximum compatibility -->
-    <meta http-equiv="refresh" content="0; url=https://quantum-resource-estimator.netlify.app/">
-    
     <!-- Canonical URL for SEO -->
-    <link rel="canonical" href="https://quantum-resource-estimator.netlify.app/">
+    <link rel="canonical" href="https://francoismarieleregent.xyz/quantum-resource-estimator/">
+    
+    <!-- Meta refresh will be set by JavaScript to preserve URL parameters -->
     
     <style>
         body {
@@ -69,22 +68,36 @@
         <p>The Quantum Resource Estimator has moved to a new location.</p>
         <div class="spinner"></div>
         <p>You'll be redirected automatically in a moment...</p>
-        <a href="https://quantum-resource-estimator.netlify.app/">
+        <a href="https://francoismarieleregent.xyz/quantum-resource-estimator/" id="manual-redirect">
             Go to new site manually
         </a>
     </div>
 
     <script>
+        // Get URL parameters and build redirect URL
+        const urlParams = window.location.search;
+        const redirectUrl = 'https://francoismarieleregent.xyz/quantum-resource-estimator/' + urlParams;
+        
+        // Set meta refresh with parameters
+        const metaRefresh = document.createElement('meta');
+        metaRefresh.setAttribute('http-equiv', 'refresh');
+        metaRefresh.setAttribute('content', '0; url=' + redirectUrl);
+        document.head.appendChild(metaRefresh);
+        
+        // Update manual redirect link with parameters
+        document.getElementById('manual-redirect').href = redirectUrl;
+        
         // JavaScript redirect as backup
         setTimeout(function() {
-            window.location.href = 'https://quantum-resource-estimator.netlify.app/';
-        }, 2000);
+            window.location.href = redirectUrl;
+        }, 1000);
 
         // Track the redirect with PostHog if it exists
         if (typeof posthog !== 'undefined') {
             posthog.capture('github_pages_redirect', {
                 from: 'github-pages',
-                to: 'quantum-resource-estimator.netlify.app'
+                to: 'francoismarieleregent.xyz/quantum-resource-estimator',
+                preserved_params: urlParams
             });
         }
     </script>
