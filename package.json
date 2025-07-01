@@ -2,6 +2,7 @@
   "name": "quantum-resource-estimator",
   "version": "0.1.0",
   "private": true,
+  "homepage": "/quantum-resource-estimator",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",

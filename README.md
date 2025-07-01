@@ -53,20 +53,21 @@ Reference for HGP and LP codes: [Constant-Overhead Fault-Tolerant Quantum Comput
 ### Installation
 
 1. Clone the repository:
-\`\`\`bash
+
+```bash
 git clone https://github.com/francois-marie/quantum-resource-estimator.git
 cd quantum-resource-estimator
-\`\`\`
+```
 
 2. Install dependencies:
-\`\`\`bash
+```bash
 npm install
-\`\`\`
+```
 
 3. Start the development server:
-\`\`\`bash
+```bash
 npm start
-\`\`\`
+```
 
 The application will be available at [http://localhost:3000](http://localhost:3000)
 
@@ -74,9 +75,9 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 The application is deployed using GitHub Pages. To deploy updates:
 
-\`\`\`bash
+```bash
 npm run deploy
-\`\`\`
+```
 
 Visit the live version at: [https://francois-marie.github.io/quantum-resource-estimator](https://francois-marie.github.io/quantum-resource-estimator)
 
