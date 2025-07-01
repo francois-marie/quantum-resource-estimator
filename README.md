@@ -73,13 +73,9 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 ## Deployment
 
-The application is deployed using GitHub Pages. To deploy updates:
+The application is deployed using Netlify. The deployment is automatically triggered when changes are pushed to the main branch.
 
-```bash
-npm run deploy
-```
-
-Visit the live version at: [https://francois-marie.github.io/quantum-resource-estimator](https://francois-marie.github.io/quantum-resource-estimator)
+Visit the live version at: [https://francoismarieleregent.xyz/quantum-resource-estimator/](https://francoismarieleregent.xyz/quantum-resource-estimator/)
 
 ## Contributing
 
@@ -102,7 +98,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 
-François-Marie Le Régent
+[François-Marie Le Régent](https://francoismarieleregent.xyz/)
 
 ## Status
 

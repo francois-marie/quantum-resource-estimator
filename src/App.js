@@ -788,7 +788,7 @@ const QuantumCalculator = () => {
         </div>
       </div>
       <div className="mt-4 text-sm text-gray-500">
-      <p>Copyright © 2025 François-Marie Le Régent. Distributed under an MIT license.</p>
+      <p>Copyright © 2025 <a href="https://francoismarieleregent.xyz/" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">François-Marie Le Régent</a>. Distributed under an MIT license.</p>
     </div>
     </div>
   );
