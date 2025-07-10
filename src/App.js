@@ -10,6 +10,7 @@ import {
   Legend,
   LogarithmicScale,
 } from 'chart.js';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import { Line } from 'react-chartjs-2';
 
 ChartJS.register(
@@ -20,7 +21,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  LogarithmicScale
+  LogarithmicScale,
+  annotationPlugin
 );
 
 // Debounce function
@@ -247,20 +249,26 @@ const QuantumCalculator = () => {
     const pValues = [];
     const nValues = [];
 
-    // Generate 50 points from 1e-6 to threshold
+    // Generate 50 points from 1e-6 to threshold (stopping at threshold)
     for (let i = 0; i < 50; i++) {
-      const p = Math.pow(10, Math.log10(1e-6) + (Math.log10(threshold) - Math.log10(1e-6)) * (i / 49));
+      const p = Math.pow(10, Math.log10(1e-6) + (Math.log10(threshold * 0.99) - Math.log10(1e-6)) * (i / 49));
+      
+      // Skip if p >= threshold
+      if (p >= threshold) {
+        break;
+      }
+      
       pValues.push(p);
 
       // For each p, find n that gives the target epsilon_L
       let nMin = 10;
-      let nMax = 1e6;
+      let nMax = 1e10; // Increased upper bound to handle divergence near threshold
       let n = nMin;
       let minDiff = Infinity;
       let bestResult = null;
 
       // Binary search for the right n
-      for (let j = 0; j < 20; j++) {
+      for (let j = 0; j < 30; j++) { // Increased iterations for better convergence
         n = Math.floor((nMin + nMax) / 2);
         const result = selectedCode.calculateParams({ p, n, k, epsilon_L });
         const diff = Math.abs(Math.log10(result.epsilon_L) - Math.log10(epsilon_L));
@@ -275,6 +283,16 @@ const QuantumCalculator = () => {
         } else {
           nMax = n;
         }
+        
+        // If we're requiring more than 1e9 qubits, we're probably too close to threshold
+        if (nMin > 1e9) {
+          break;
+        }
+      }
+
+      // Skip this point if we need an unreasonably large number of qubits
+      if (bestResult && bestResult.n > 1e9) {
+        break; // Stop generating points when we need too many qubits
       }
 
       nValues.push(bestResult ? bestResult.n : n);
@@ -282,7 +300,8 @@ const QuantumCalculator = () => {
 
     return {
       pValues,
-      nValues
+      nValues,
+      threshold
     };
   };
 
@@ -290,6 +309,11 @@ const QuantumCalculator = () => {
   const findRequiredN = (code, p, target_epsilon_L, k = 1) => {
     const selectedCode = codeLibrary[code];
     if (!selectedCode) return null;
+
+    // Check if physical error rate exceeds threshold
+    if (p >= selectedCode.threshold) {
+      return null; // Code cannot work above threshold
+    }
 
     let nMin = 10;
     let nMax = 1e6;
@@ -484,13 +508,84 @@ const QuantumCalculator = () => {
         <div className="h-96">
           <Line
             data={{
-              labels: generatePlotData(inputs.code, inputs.epsilon_L, inputs.k)?.pValues.map(p => p.toExponential(1)),
-              datasets: [{
-                label: `${codeLibrary[inputs.code].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                data: generatePlotData(inputs.code, inputs.epsilon_L, inputs.k)?.nValues,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-              }]
+              datasets: [
+                {
+                  label: `${codeLibrary['surface'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(75, 192, 192)',
+                  backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
+                {
+                  label: `${codeLibrary['hypergraph'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(255, 99, 132)',
+                  backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
+                {
+                  label: `${codeLibrary['lifted'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(255, 159, 64)',
+                  backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
+                // Vertical threshold lines
+                {
+                  label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
+                  data: [
+                    { x: codeLibrary['surface'].threshold, y: 10 },
+                    { x: codeLibrary['surface'].threshold, y: 100 }
+                  ],
+                  borderColor: 'rgb(75, 192, 192)',
+                  backgroundColor: 'rgb(75, 192, 192)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  pointRadius: 0,
+                  showLine: true,
+                  tension: 0
+                },
+                {
+                  label: `Hypergraph Product Code Threshold (${(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%)`,
+                  data: [
+                    { x: codeLibrary['hypergraph'].threshold, y: 10 },
+                    { x: codeLibrary['hypergraph'].threshold, y: 100 }
+                  ],
+                  borderColor: 'rgb(255, 99, 132)',
+                  backgroundColor: 'rgb(255, 99, 132)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  pointRadius: 0,
+                  showLine: true,
+                  tension: 0
+                },
+                {
+                  label: `Lifted Product Code Threshold (${(codeLibrary['lifted'].threshold * 100).toFixed(2)}%)`,
+                  data: [
+                    { x: codeLibrary['lifted'].threshold, y: 10 },
+                    { x: codeLibrary['lifted'].threshold, y: 100 }
+                  ],
+                  borderColor: 'rgb(255, 159, 64)',
+                  backgroundColor: 'rgb(255, 159, 64)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  pointRadius: 0,
+                  showLine: true,
+                  tension: 0
+                }
+              ]
             }}
             options={{
               responsive: true,
@@ -515,13 +610,31 @@ const QuantumCalculator = () => {
                 tooltip: {
                   callbacks: {
                     label: (context) => {
-                      return `n = ${context.parsed.y.toExponential(1)} qubits`;
+                      const datasetLabel = context.dataset.label;
+                      if (datasetLabel && datasetLabel.includes('Threshold')) {
+                        return `${datasetLabel}: p = ${context.parsed.x.toExponential(1)}`;
+                      }
+                      return `${context.dataset.label.split(' (')[0]}: p = ${context.parsed.x.toExponential(1)}, n = ${context.parsed.y.toExponential(1)} qubits`;
                     }
                   }
+                },
+                legend: {
+                  display: true,
+                  position: 'top'
                 }
               }
             }}
           />
+        </div>
+        
+        <div className="mt-4 text-sm text-gray-600">
+          <h3 className="font-semibold mb-2">Code Thresholds (Vertical Dashed Lines):</h3>
+          <ul className="list-disc pl-5 space-y-1">
+            <li><span style={{color: 'rgb(75, 192, 192)'}} className="font-medium">Surface Code:</span> p_th = {(codeLibrary['surface'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(255, 99, 132)'}} className="font-medium">Hypergraph Product Code:</span> p_th = {(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> p_th = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
+          </ul>
+          <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold - this is why the curves end at these lines.</p>
         </div>
       </div>
       
