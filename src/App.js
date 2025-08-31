@@ -274,6 +274,7 @@ const QuantumCalculator = () => {
     const threshold = selectedCode.threshold;
     const pValues = [];
     const nValues = [];
+    const kValues = []; // Store k values for tooltip
 
     // Generate 50 points from 1e-6 to threshold (stopping at threshold)
     for (let i = 0; i < 50; i++) {
@@ -321,12 +322,29 @@ const QuantumCalculator = () => {
         break; // Stop generating points when we need too many qubits
       }
 
-      nValues.push(bestResult ? bestResult.n : n);
+      const physicalQubits = bestResult ? bestResult.n : n;
+      
+      // Calculate number of logical qubits based on code type
+      let logicalQubits;
+      if (code === 'hypergraph') {
+        // For HGP codes, k >= 0.04n, so we use k = 0.04n
+        logicalQubits = Math.max(1, Math.floor(0.04 * physicalQubits));
+      } else if (code === 'lifted') {
+        // For LP codes, k ≈ 0.38n^0.85
+        logicalQubits = Math.max(1, Math.floor(0.38 * Math.pow(physicalQubits, 0.85)));
+      } else {
+        // Surface and Color codes encode 1 logical qubit
+        logicalQubits = 1;
+      }
+
+      nValues.push(physicalQubits);
+      kValues.push(logicalQubits);
     }
 
     return {
       pValues,
       nValues,
+      kValues,
       threshold
     };
   };
@@ -535,50 +553,66 @@ const QuantumCalculator = () => {
           <Line
             data={{
               datasets: [
-                {
-                  label: `${codeLibrary['surface'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(75, 192, 192)',
-                  backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
-                {
-                  label: `${codeLibrary['hypergraph'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(255, 99, 132)',
-                  backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
-                {
-                  label: `${codeLibrary['lifted'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(255, 159, 64)',
-                  backgroundColor: 'rgba(255, 159, 64, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
-                {
-                  label: `${codeLibrary['color'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('color', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(147, 51, 234)',
-                  backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
+                (() => {
+                  const surfaceData = generatePlotData('surface', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['surface'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: surfaceData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: surfaceData.nValues[i],
+                      k: surfaceData.kValues[i]
+                    })),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
+                (() => {
+                  const hypergraphData = generatePlotData('hypergraph', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['hypergraph'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: hypergraphData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: hypergraphData.nValues[i],
+                      k: hypergraphData.kValues[i]
+                    })),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
+                (() => {
+                  const liftedData = generatePlotData('lifted', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['lifted'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: liftedData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: liftedData.nValues[i],
+                      k: liftedData.kValues[i]
+                    })),
+                    borderColor: 'rgb(255, 159, 64)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
+                (() => {
+                  const colorData = generatePlotData('color', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['color'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: colorData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: colorData.nValues[i],
+                      k: colorData.kValues[i]
+                    })),
+                    borderColor: 'rgb(147, 51, 234)',
+                    backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
                 // Vertical threshold lines
                 {
                   label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
@@ -660,12 +694,19 @@ const QuantumCalculator = () => {
               plugins: {
                 tooltip: {
                   callbacks: {
+                    title: (tooltipItems) => {
+                      return 'QEC Code Requirements';
+                    },
                     label: (context) => {
                       const datasetLabel = context.dataset.label;
                       if (datasetLabel && datasetLabel.includes('Threshold')) {
                         return `${datasetLabel}: p = ${context.parsed.x.toExponential(1)}`;
                       }
-                      return `${context.dataset.label.split(' (')[0]}: p = ${context.parsed.x.toExponential(1)}, n = ${context.parsed.y.toExponential(1)} qubits`;
+                      const codeName = context.dataset.label.split(' (')[0];
+                      const p = context.parsed.x.toExponential(1);
+                      const n = context.parsed.y.toExponential(1);
+                      const k = context.raw.k.toExponential(1) || 1;
+                      return `${codeName}: p = ${p}, n = ${n} physical qubits, k = ${k} logical qubits`;
                     }
                   }
                 },
@@ -686,7 +727,16 @@ const QuantumCalculator = () => {
             <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> p_th = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> p_th = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
           </ul>
-          <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold - this is why the curves end at these lines.</p>
+          <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold, this is why the curves end at these lines.</p>
+          <div className="mt-4 p-3 bg-blue-50 rounded">
+            <p className="text-sm text-blue-800 font-medium mb-2">Logical Qubits Encoded by Each Code:</p>
+            <p className="text-xs text-blue-700">
+              • <strong>Surface and Color Codes:</strong> Encode k = 1 logical qubit per code block.<br/>
+              • <strong>Hypergraph Product Code (HGP):</strong> Encodes k ≥ 0.04n logical qubits (we use k = 0.04n).<br/>
+              • <strong>Lifted Product Code (LP):</strong> Encodes k ≈ 0.38n^0.85 logical qubits.<br/>
+              <strong>Hover over data points</strong> to see the number of logical qubits (k) and physical qubits (n) for each code.
+            </p>
+          </div>
         </div>
       </div>
       
