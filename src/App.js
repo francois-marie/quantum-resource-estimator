@@ -694,12 +694,19 @@ const QuantumCalculator = () => {
               plugins: {
                 tooltip: {
                   callbacks: {
+                    title: (tooltipItems) => {
+                      return 'QEC Code Requirements';
+                    },
                     label: (context) => {
                       const datasetLabel = context.dataset.label;
                       if (datasetLabel && datasetLabel.includes('Threshold')) {
                         return `${datasetLabel}: p = ${context.parsed.x.toExponential(1)}`;
                       }
-                      return `${context.dataset.label.split(' (')[0]}: p = ${context.parsed.x.toExponential(1)}, n = ${context.parsed.y.toExponential(1)} qubits`;
+                      const codeName = context.dataset.label.split(' (')[0];
+                      const p = context.parsed.x.toExponential(1);
+                      const n = context.parsed.y.toExponential(1);
+                      const k = context.raw.k.toExponential(1) || 1;
+                      return `${codeName}: p = ${p}, n = ${n} physical qubits, k = ${k} logical qubits`;
                     }
                   }
                 },
