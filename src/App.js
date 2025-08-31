@@ -12,6 +12,8 @@ import {
 } from 'chart.js';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import { Line } from 'react-chartjs-2';
+import { InlineMath, BlockMath } from 'react-katex';
+import 'katex/dist/katex.min.css';
 
 ChartJS.register(
   CategoryScale,
@@ -73,6 +75,7 @@ const QuantumCalculator = () => {
   
   const [results, setResults] = useState({});
   const [error, setError] = useState('');
+  const [copyStatus, setCopyStatus] = useState('');
 
   // Convert value to log scale for slider
   const toLogScale = (value, min, max) => {
@@ -264,6 +267,76 @@ const QuantumCalculator = () => {
       
       return newInputs;
     });
+  };
+
+  // Function to copy results to clipboard
+  const copyResultsToClipboard = async () => {
+    if (!results || Object.keys(results).length === 0) return;
+
+    let resultText = "Quantum Error Correction Results\n";
+    resultText += "=====================================\n\n";
+    
+    // Input parameters
+    resultText += "Input Parameters:\n";
+    resultText += `Code: ${codeLibrary[inputs.code].name}\n`;
+    resultText += `Physical Error Rate (p): ${inputs.p.toExponential(3)}\n`;
+    resultText += `Target Logical Error Rate (ε_L): ${inputs.epsilon_L.toExponential(3)}\n`;
+    resultText += `Number of Logical Qubits (k): ${inputs.k}\n\n`;
+    
+    // Results
+    resultText += "Results:\n";
+    
+    if (results.n) {
+      resultText += `Physical Data Qubits (n): ${Math.ceil(results.n).toLocaleString()}\n`;
+    }
+    
+    if (results.n_ancilla) {
+      resultText += `Physical Ancilla Qubits (n_a): ${Math.ceil(results.n_ancilla).toLocaleString()}\n`;
+    }
+    
+    if (results.n && results.n_ancilla) {
+      resultText += `Total Qubits (n+n_a): ${Math.ceil(results.n + results.n_ancilla).toLocaleString()}\n`;
+    }
+    
+    if (results.k) {
+      resultText += `Logical Qubits (k): ${results.k}\n`;
+    }
+    
+    if (results.d) {
+      resultText += `Code Distance (d): ${results.d}\n`;
+    }
+    
+    if (results.epsilon_L) {
+      resultText += `Logical Error Rate (ε_L): ${results.epsilon_L.toExponential(6)}\n`;
+    }
+    
+    // Add code configuration summary
+    if (results.n && results.k && results.d) {
+      resultText += `\nCode Configuration: [[${Math.ceil(results.n)}, ${results.k}, ${results.d}]]`;
+    }
+
+    try {
+      await navigator.clipboard.writeText(resultText);
+      setCopyStatus('Copied!');
+      setTimeout(() => setCopyStatus(''), 2000);
+    } catch (err) {
+      console.error('Failed to copy results: ', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = resultText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setCopyStatus('Copied!');
+        setTimeout(() => setCopyStatus(''), 2000);
+      } catch (fallbackErr) {
+        console.error('Fallback copy failed: ', fallbackErr);
+        setCopyStatus('Copy failed');
+        setTimeout(() => setCopyStatus(''), 2000);
+      }
+      document.body.removeChild(textArea);
+    }
   };
   
   // Function to generate plot data
@@ -463,49 +536,64 @@ const QuantumCalculator = () => {
         </div>
         
         <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-xl font-semibold mb-4">Results</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Results</h2>
+            {Object.keys(results).length > 0 && (
+              <button
+                onClick={() => copyResultsToClipboard()}
+                className={`px-3 py-1 text-white text-sm rounded transition-colors ${
+                  copyStatus === 'Copied!' ? 'bg-green-600' : 
+                  copyStatus === 'Copy failed' ? 'bg-red-600' : 
+                  'bg-blue-600 hover:bg-blue-700'
+                }`}
+                title="Copy results to clipboard"
+              >
+                {copyStatus || 'Copy Results'}
+              </button>
+            )}
+          </div>
           
           {Object.keys(results).length > 0 ? (
             <div className="space-y-4">
               {results.n && (
                 <div className="border-b pb-2">
-                  <span className="font-medium">Physical Data Qubits (n):</span> {Math.ceil(results.n).toLocaleString()}
+                  <span className="font-medium">Physical Data Qubits (<InlineMath math="n" />):</span> {Math.ceil(results.n).toLocaleString()}
                 </div>
               )}
               
               {results.n_ancilla && (
                 <div className="border-b pb-2">
-                  <span className="font-medium">Physical Ancilla Qubits (n_a):</span> {Math.ceil(results.n_ancilla).toLocaleString()}
+                  <span className="font-medium">Physical Ancilla Qubits (<InlineMath math="n_a" />):</span> {Math.ceil(results.n_ancilla).toLocaleString()}
                 </div>
               )}
               
               {results.n && results.n_ancilla && (
                 <div className="border-b pb-2">
-                  <span className="font-medium">Total Qubits (n+n_a):</span> {Math.ceil(results.n + results.n_ancilla).toLocaleString()}
+                  <span className="font-medium">Total Qubits (<InlineMath math="n+n_a" />):</span> {Math.ceil(results.n + results.n_ancilla).toLocaleString()}
                 </div>
               )}
               
               {results.k && (
                 <div className="border-b pb-2">
-                  <span className="font-medium">Logical Qubits (k):</span> {results.k}
+                  <span className="font-medium">Logical Qubits (<InlineMath math="k" />):</span> {results.k}
                 </div>
               )}
               
               {results.d && (
                 <div className="border-b pb-2">
-                  <span className="font-medium">Code Distance (d):</span> {results.d}
+                  <span className="font-medium">Code Distance (<InlineMath math="d" />):</span> {results.d}
                 </div>
               )}
               
               {results.epsilon_L && (
                 <div className="border-b pb-2">
-                  <span className="font-medium">Logical Error Rate (ε_L):</span> {results.epsilon_L.toExponential(6)}
+                  <span className="font-medium">Logical Error Rate (<InlineMath math="\varepsilon_L" />):</span> {results.epsilon_L.toExponential(6)}
                 </div>
               )}
               
               <div className="mt-4 p-3 bg-blue-50 rounded">
                 <p className="text-sm text-blue-800">
-                  For the {codeLibrary[inputs.code].name} with these parameters, you would need a [[{Math.ceil(results.n)}, {results.k}, {results.d}]] code configuration.
+                  For the {codeLibrary[inputs.code].name} with these parameters, you would need a [[<InlineMath math="n=" /> {Math.ceil(results.n)}, <InlineMath math="k=" /> {results.k}, <InlineMath math="d=" /> {results.d}]] code configuration.
                 </p>
               </div>
             </div>
@@ -528,7 +616,7 @@ const QuantumCalculator = () => {
         
         <div className="mb-6">
           <label className="block text-sm font-medium mb-1">
-            Target Logical Error Rate (ε_L)
+            Target Logical Error Rate (<InlineMath math="\varepsilon_L" />)
           </label>
           <div className="flex items-center space-x-4">
             <input
@@ -553,66 +641,50 @@ const QuantumCalculator = () => {
           <Line
             data={{
               datasets: [
-                (() => {
-                  const surfaceData = generatePlotData('surface', inputs.epsilon_L, inputs.k);
-                  return {
-                    label: `${codeLibrary['surface'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                    data: surfaceData?.pValues.map((p, i) => ({
-                      x: p,
-                      y: surfaceData.nValues[i],
-                      k: surfaceData.kValues[i]
-                    })),
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                    tension: 0.1,
-                    showLine: true
-                  };
-                })(),
-                (() => {
-                  const hypergraphData = generatePlotData('hypergraph', inputs.epsilon_L, inputs.k);
-                  return {
-                    label: `${codeLibrary['hypergraph'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                    data: hypergraphData?.pValues.map((p, i) => ({
-                      x: p,
-                      y: hypergraphData.nValues[i],
-                      k: hypergraphData.kValues[i]
-                    })),
-                    borderColor: 'rgb(255, 99, 132)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                    tension: 0.1,
-                    showLine: true
-                  };
-                })(),
-                (() => {
-                  const liftedData = generatePlotData('lifted', inputs.epsilon_L, inputs.k);
-                  return {
-                    label: `${codeLibrary['lifted'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                    data: liftedData?.pValues.map((p, i) => ({
-                      x: p,
-                      y: liftedData.nValues[i],
-                      k: liftedData.kValues[i]
-                    })),
-                    borderColor: 'rgb(255, 159, 64)',
-                    backgroundColor: 'rgba(255, 159, 64, 0.1)',
-                    tension: 0.1,
-                    showLine: true
-                  };
-                })(),
-                (() => {
-                  const colorData = generatePlotData('color', inputs.epsilon_L, inputs.k);
-                  return {
-                    label: `${codeLibrary['color'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                    data: colorData?.pValues.map((p, i) => ({
-                      x: p,
-                      y: colorData.nValues[i],
-                      k: colorData.kValues[i]
-                    })),
-                    borderColor: 'rgb(147, 51, 234)',
-                    backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                    tension: 0.1,
-                    showLine: true
-                  };
-                })(),
+                {
+                    label: `${codeLibrary['surface'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(75, 192, 192)',
+                  backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
+                {
+                    label: `${codeLibrary['hypergraph'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(255, 99, 132)',
+                  backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
+                {
+                    label: `${codeLibrary['lifted'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(255, 159, 64)',
+                  backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
+                {
+                    label: `${codeLibrary['color'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('color', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(147, 51, 234)',
+                  backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
                 // Vertical threshold lines
                 {
                   label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
@@ -722,10 +794,10 @@ const QuantumCalculator = () => {
         <div className="mt-4 text-sm text-gray-600">
           <h3 className="font-semibold mb-2">Code Thresholds (Vertical Dashed Lines):</h3>
           <ul className="list-disc pl-5 space-y-1">
-            <li><span style={{color: 'rgb(75, 192, 192)'}} className="font-medium">Surface Code:</span> p_th = {(codeLibrary['surface'].threshold * 100).toFixed(2)}%</li>
-            <li><span style={{color: 'rgb(255, 99, 132)'}} className="font-medium">Hypergraph Product Code:</span> p_th = {(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%</li>
-            <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> p_th = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
-            <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> p_th = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(75, 192, 192)'}} className="font-medium">Surface Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['surface'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(255, 99, 132)'}} className="font-medium">Hypergraph Product Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
           </ul>
           <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold, this is why the curves end at these lines.</p>
           <div className="mt-4 p-3 bg-blue-50 rounded">
@@ -744,18 +816,18 @@ const QuantumCalculator = () => {
         <h2 className="text-xl font-semibold mb-4">Quantum Error Correction Table</h2>
         
         <h3 className="text-lg font-semibold mb-2">Intermediate Era</h3>
-        <h4 className="text-md font-medium mb-2">KiloQuop Regime (ε_L = 1e-3)</h4>
+        <h4 className="text-md font-medium mb-2">KiloQuop Regime (<InlineMath math="\varepsilon_L = 10^{-3}" />)</h4>
         <table className="min-w-full bg-white mb-6">
           <thead>
             <tr>
-              <th className="py-2">Physical Error Rate (p)</th>
-              <th className="py-2">Required Data Qubits (n)</th>
-              <th className="py-2">Code Distance (d)</th>
-              <th className="py-2">Ancilla Qubits (n_a)</th>
+              <th className="py-2">Physical Error Rate (<InlineMath math="p" />)</th>
+              <th className="py-2">Required Data Qubits (<InlineMath math="n" />)</th>
+              <th className="py-2">Code Distance (<InlineMath math="d" />)</th>
+              <th className="py-2">Ancilla Qubits (<InlineMath math="n_a" />)</th>
               <th className="py-2">Total Qubits</th>
-              <th className="py-2">Achieved ε_L</th>
-              <th className="py-2">Code Parameters [[n,k,d]]</th>
-              <th className="py-2">Encoding Rate (k/n)</th>
+              <th className="py-2">Achieved <InlineMath math="\varepsilon_L" /></th>
+              <th className="py-2">Code Parameters <InlineMath math="[[n,k,d]]" /></th>
+              <th className="py-2">Encoding Rate (<InlineMath math="k/n" />)</th>
             </tr>
           </thead>
           <tbody>
@@ -787,18 +859,18 @@ const QuantumCalculator = () => {
         </table>
 
         <h3 className="text-lg font-semibold mb-2">Early FTQC Era</h3>
-        <h4 className="text-md font-medium mb-2">MegaQuop Regime (ε_L = 1e-6)</h4>
+        <h4 className="text-md font-medium mb-2">MegaQuop Regime (<InlineMath math="\varepsilon_L = 10^{-6}" />)</h4>
         <table className="min-w-full bg-white mb-6">
           <thead>
             <tr>
-              <th className="py-2">Physical Error Rate (p)</th>
-              <th className="py-2">Required Data Qubits (n)</th>
-              <th className="py-2">Code Distance (d)</th>
-              <th className="py-2">Ancilla Qubits (n_a)</th>
+              <th className="py-2">Physical Error Rate (<InlineMath math="p" />)</th>
+              <th className="py-2">Required Data Qubits (<InlineMath math="n" />)</th>
+              <th className="py-2">Code Distance (<InlineMath math="d" />)</th>
+              <th className="py-2">Ancilla Qubits (<InlineMath math="n_a" />)</th>
               <th className="py-2">Total Qubits</th>
-              <th className="py-2">Achieved ε_L</th>
+              <th className="py-2">Achieved <InlineMath math="\varepsilon_L" /></th>
               <th className="py-2">Code Parameters [[n,k,d]]</th>
-              <th className="py-2">Encoding Rate (k/n)</th>
+              <th className="py-2">Encoding Rate (<InlineMath math="k/n" />)</th>
             </tr>
           </thead>
           <tbody>
@@ -830,18 +902,18 @@ const QuantumCalculator = () => {
         </table>
 
         <h3 className="text-lg font-semibold mb-2">Large Scale FTQC Era</h3>
-        <h4 className="text-md font-medium mb-2">GigaQuop Regime (ε_L = 1e-9)</h4>
+        <h4 className="text-md font-medium mb-2">GigaQuop Regime (<InlineMath math="\varepsilon_L = 10^{-9}" />)</h4>
         <table className="min-w-full bg-white mb-6">
           <thead>
             <tr>
-              <th className="py-2">Physical Error Rate (p)</th>
-              <th className="py-2">Required Data Qubits (n)</th>
-              <th className="py-2">Code Distance (d)</th>
-              <th className="py-2">Ancilla Qubits (n_a)</th>
+              <th className="py-2">Physical Error Rate (<InlineMath math="p" />)</th>
+              <th className="py-2">Required Data Qubits (<InlineMath math="n" />)</th>
+              <th className="py-2">Code Distance (<InlineMath math="d" />)</th>
+              <th className="py-2">Ancilla Qubits (<InlineMath math="n_a" />)</th>
               <th className="py-2">Total Qubits</th>
-              <th className="py-2">Achieved ε_L</th>
+              <th className="py-2">Achieved <InlineMath math="\varepsilon_L" /></th>
               <th className="py-2">Code Parameters [[n,k,d]]</th>
-              <th className="py-2">Encoding Rate (k/n)</th>
+              <th className="py-2">Encoding Rate (<InlineMath math="k/n" />)</th>
             </tr>
           </thead>
           <tbody>
@@ -872,18 +944,18 @@ const QuantumCalculator = () => {
           </tbody>
         </table>
 
-        <h4 className="text-md font-medium mb-2">TeraQuop Regime (ε_L = 1e-12)</h4>
+        <h4 className="text-md font-medium mb-2">TeraQuop Regime (<InlineMath math="\varepsilon_L = 10^{-12}" />)</h4>
         <table className="min-w-full bg-white mb-6">
           <thead>
             <tr>
-              <th className="py-2">Physical Error Rate (p)</th>
-              <th className="py-2">Required Data Qubits (n)</th>
-              <th className="py-2">Code Distance (d)</th>
-              <th className="py-2">Ancilla Qubits (n_a)</th>
+              <th className="py-2">Physical Error Rate (<InlineMath math="p" />)</th>
+              <th className="py-2">Required Data Qubits (<InlineMath math="n" />)</th>
+              <th className="py-2">Code Distance (<InlineMath math="d" />)</th>
+              <th className="py-2">Ancilla Qubits (<InlineMath math="n_a" />)</th>
               <th className="py-2">Total Qubits</th>
-              <th className="py-2">Achieved ε_L</th>
+              <th className="py-2">Achieved <InlineMath math="\varepsilon_L" /></th>
               <th className="py-2">Code Parameters [[n,k,d]]</th>
-              <th className="py-2">Encoding Rate (k/n)</th>
+              <th className="py-2">Encoding Rate (<InlineMath math="k/n" />)</th>
             </tr>
           </thead>
           <tbody>
@@ -915,18 +987,18 @@ const QuantumCalculator = () => {
         </table>
 
         <h3 className="text-lg font-semibold mb-2">Mature Era</h3>
-        <h4 className="text-md font-medium mb-2">PetaQuop Regime (ε_L = 1e-15)</h4>
+        <h4 className="text-md font-medium mb-2">PetaQuop Regime (<InlineMath math="\varepsilon_L = 10^{-15}" />)</h4>
         <table className="min-w-full bg-white mb-6">
           <thead>
             <tr>
-              <th className="py-2">Physical Error Rate (p)</th>
-              <th className="py-2">Required Data Qubits (n)</th>
-              <th className="py-2">Code Distance (d)</th>
-              <th className="py-2">Ancilla Qubits (n_a)</th>
+              <th className="py-2">Physical Error Rate (<InlineMath math="p" />)</th>
+              <th className="py-2">Required Data Qubits (<InlineMath math="n" />)</th>
+              <th className="py-2">Code Distance (<InlineMath math="d" />)</th>
+              <th className="py-2">Ancilla Qubits (<InlineMath math="n_a" />)</th>
               <th className="py-2">Total Qubits</th>
-              <th className="py-2">Achieved ε_L</th>
+              <th className="py-2">Achieved <InlineMath math="\varepsilon_L" /></th>
               <th className="py-2">Code Parameters [[n,k,d]]</th>
-              <th className="py-2">Encoding Rate (k/n)</th>
+              <th className="py-2">Encoding Rate (<InlineMath math="k/n" />)</th>
             </tr>
           </thead>
           <tbody>
@@ -960,56 +1032,70 @@ const QuantumCalculator = () => {
       
       <div className="mt-8 bg-white p-4 rounded shadow">
         <h2 className="text-xl font-semibold mb-2">Formula Reference</h2>
-        <div className="text-sm text-gray-700 space-y-4">
+        <div className="text-sm text-gray-700 space-y-6">
           <div>
-            <p><b>Surface Code:</b> LFR(surface) = 0.03k(p/0.011)^⌈⌊√(n/k)⌋/2⌉</p>
-            <p>Where:</p>
+            <p className="font-bold mb-3">Surface Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{surface}} = 0.03 \cdot k \cdot \left(\frac{p}{0.011}\right)^{\lceil\lfloor\sqrt{n/k}\rfloor/2\rceil}" />
+            </div>
+            <p className="mt-3">Where:</p>
             <ul className="list-disc pl-6 mt-2">
-              <li>LFR = Logical Failure Rate (ε_L)</li>
-              <li>k = Number of logical qubits</li>
-              <li>p = Physical error probability</li>
-              <li>n = Number of physical qubits</li>
-              <li>d = Code distance, approximately √(n/k) for surface code</li>
+              <li><InlineMath math="\varepsilon_L" /> = Logical Failure Rate</li>
+              <li><InlineMath math="k" /> = Number of logical qubits</li>
+              <li><InlineMath math="p" /> = Physical error probability</li>
+              <li><InlineMath math="n" /> = Number of physical qubits</li>
+              <li><InlineMath math="d" /> = Code distance, approximately <InlineMath math="\sqrt{n/k}" /> for surface code</li>
             </ul>
             <p className="mt-2 text-sm text-gray-500">Source: <a href="https://arxiv.org/abs/0910.4074" className="text-blue-600 hover:underline">Surface code quantum communication (Fowler et al., 2010)</a></p>
           </div>
 
           <div>
-            <p><b>Hypergraph Product Code:</b> LFR(HGP) = 0.07(p/0.006)^(0.47n^0.27)</p>
-            <p>Where:</p>
+            <p className="font-bold mb-3">Hypergraph Product Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{HGP}} = 0.07 \cdot \left(\frac{p}{0.006}\right)^{0.47 \cdot n^{0.27}}" />
+            </div>
+            <p className="mt-3">Where:</p>
             <ul className="list-disc pl-6 mt-2">
-              <li>LFR = Logical Failure Rate (ε_L)</li>
-              <li>p = Physical error probability</li>
-              <li>n = Number of physical qubits</li>
-              <li>Threshold ≈ 0.006 or 0.6%</li>
+              <li><InlineMath math="\varepsilon_L" /> = Logical Failure Rate</li>
+              <li><InlineMath math="p" /> = Physical error probability</li>
+              <li><InlineMath math="n" /> = Number of physical qubits</li>
+              <li>Threshold <InlineMath math="p_{\text{th}} \approx 0.006" /> or 0.6%</li>
             </ul>
           </div>
 
           <div>
-            <p><b>Lifted Product Code:</b> LFR(LP) = 2.3(p/0.0066)^(0.11n^0.60)</p>
-            <p>Where:</p>
+            <p className="font-bold mb-3">Lifted Product Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{LP}} = 2.3 \cdot \left(\frac{p}{0.0066}\right)^{0.11 \cdot n^{0.60}}" />
+            </div>
+            <p className="mt-3">Where:</p>
             <ul className="list-disc pl-6 mt-2">
-              <li>LFR = Logical Failure Rate (ε_L)</li>
-              <li>p = Physical error probability</li>
-              <li>n = Number of physical qubits</li>
-              <li>Threshold ≈ 0.0066 or 0.66%</li>
+              <li><InlineMath math="\varepsilon_L" /> = Logical Failure Rate</li>
+              <li><InlineMath math="p" /> = Physical error probability</li>
+              <li><InlineMath math="n" /> = Number of physical qubits</li>
+              <li>Threshold <InlineMath math="p_{\text{th}} \approx 0.0066" /> or 0.66%</li>
             </ul>
             <p className="mt-2 text-sm text-gray-500">Source for HGP and LP codes: <a href="https://arxiv.org/abs/2308.08648v1" className="text-blue-600 hover:underline">Constant-Overhead Fault-Tolerant Quantum Computation with Reconfigurable Atom Arrays (Xu et al., 2023)</a></p>
           </div>
 
           <div>
-            <p><b>Color Code:</b> LFR(color) = 0.03k(p/0.0036)^⌈d/2⌉</p>
-            <p>Where:</p>
+            <p className="font-bold mb-3">Color Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{color}} = 0.03 \cdot k \cdot \left(\frac{p}{0.0036}\right)^{\lceil d/2 \rceil}" />
+            </div>
+            <p className="mt-3">Where:</p>
             <ul className="list-disc pl-6 mt-2">
-              <li>LFR = Logical Failure Rate (ε_L)</li>
-              <li>k = Number of logical qubits</li>
-              <li>p = Physical error probability</li>
-              <li>d = Code distance, approximately √(n/k) for triangular color codes</li>
-              <li>Threshold ≈ 0.0036 or 0.36% (<a href="https://doi.org/10.1103/PRXQuantum.5.030352" className="text-blue-600 hover:underline">circuit-level noise</a>)</li>
+              <li><InlineMath math="\varepsilon_L" /> = Logical Failure Rate</li>
+              <li><InlineMath math="k" /> = Number of logical qubits</li>
+              <li><InlineMath math="p" /> = Physical error probability</li>
+              <li><InlineMath math="d" /> = Code distance, approximately <InlineMath math="\sqrt{n/k}" /> for triangular color codes</li>
+              <li>Threshold <InlineMath math="p_{\text{th}} \approx 0.0036" /> or 0.36% (<a href="https://doi.org/10.1103/PRXQuantum.5.030352" className="text-blue-600 hover:underline">circuit-level noise</a>)</li>
             </ul>
             <p className="mt-2 text-sm text-gray-500">Color code formula for triangular honeycomb (6.6.6) patches. Steane code [[7,1,3]] is the d=3 member.</p>
           </div>
-          <p><b>LFR:</b> probability that any of the logical qubits fails per code cycle</p>
+          <div className="mt-4 p-3 bg-blue-50 rounded">
+            <p className="font-medium"><InlineMath math="\varepsilon_L" />: probability that any of the logical qubits fails per code cycle</p>
+          </div>
         </div>
         <div className="mt-4 text-sm text-gray-500">
           <p>Inspiration from: <a href="https://quantumcomputingreport.com/nisq-versus-ftqc-in-the-2025-2029-timeframe/" className="text-blue-600 hover:underline">Quantum Computing Report - NISQ Versus FTQC in the 2025-2029 Timeframe</a></p>
