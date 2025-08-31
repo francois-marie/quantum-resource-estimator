@@ -122,6 +122,32 @@ const QuantumCalculator = () => {
         return result;
       }
     },
+    color: {
+      name: 'Color Code',
+      threshold: 0.0036, // 0.36% (circuit-level noise)
+      calculateParams: (params) => {
+        let result = {};
+        const p_ratio = params.p / 0.0036; // Using circuit-level threshold
+        
+        // Calculate code distance based on number of data qubits per logical qubit
+        // For triangular honeycomb (6.6.6) color codes, d ≈ √(n/k)
+        result.d = Math.floor(Math.sqrt(params.n / params.k));
+        
+        // Calculate number of ancilla qubits for all logical qubits
+        // Using similar structure to surface code for consistency
+        result.n_ancilla = params.k * (Math.pow(result.d - 1, 2) + 2 * (result.d - 1));
+        
+        // Calculate logical error rate using the color code formula
+        // LFR_color ≈ A * k * (p/p_th_color)^⌈d/2⌉
+        result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, Math.ceil(result.d / 2));
+        
+        // Always include k and n in results
+        result.k = params.k;
+        result.n = params.n;
+        
+        return result;
+      }
+    },
     hypergraph: {
       name: 'Hypergraph Product Code',
       threshold: 0.006, // 0.6%
@@ -542,6 +568,17 @@ const QuantumCalculator = () => {
                   tension: 0.1,
                   showLine: true
                 },
+                {
+                  label: `${codeLibrary['color'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('color', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(147, 51, 234)',
+                  backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
                 // Vertical threshold lines
                 {
                   label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
@@ -579,6 +616,20 @@ const QuantumCalculator = () => {
                   ],
                   borderColor: 'rgb(255, 159, 64)',
                   backgroundColor: 'rgb(255, 159, 64)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  pointRadius: 0,
+                  showLine: true,
+                  tension: 0
+                },
+                {
+                  label: `Color Code Threshold (${(codeLibrary['color'].threshold * 100).toFixed(2)}%)`,
+                  data: [
+                    { x: codeLibrary['color'].threshold, y: 10 },
+                    { x: codeLibrary['color'].threshold, y: 100 }
+                  ],
+                  borderColor: 'rgb(147, 51, 234)',
+                  backgroundColor: 'rgb(147, 51, 234)',
                   borderWidth: 2,
                   borderDash: [5, 5],
                   pointRadius: 0,
@@ -633,6 +684,7 @@ const QuantumCalculator = () => {
             <li><span style={{color: 'rgb(75, 192, 192)'}} className="font-medium">Surface Code:</span> p_th = {(codeLibrary['surface'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(255, 99, 132)'}} className="font-medium">Hypergraph Product Code:</span> p_th = {(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> p_th = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> p_th = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
           </ul>
           <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold - this is why the curves end at these lines.</p>
         </div>
@@ -893,6 +945,19 @@ const QuantumCalculator = () => {
               <li>Threshold ≈ 0.0066 or 0.66%</li>
             </ul>
             <p className="mt-2 text-sm text-gray-500">Source for HGP and LP codes: <a href="https://arxiv.org/abs/2308.08648v1" className="text-blue-600 hover:underline">Constant-Overhead Fault-Tolerant Quantum Computation with Reconfigurable Atom Arrays (Xu et al., 2023)</a></p>
+          </div>
+
+          <div>
+            <p><b>Color Code:</b> LFR(color) = 0.03k(p/0.0036)^⌈d/2⌉</p>
+            <p>Where:</p>
+            <ul className="list-disc pl-6 mt-2">
+              <li>LFR = Logical Failure Rate (ε_L)</li>
+              <li>k = Number of logical qubits</li>
+              <li>p = Physical error probability</li>
+              <li>d = Code distance, approximately √(n/k) for triangular color codes</li>
+              <li>Threshold ≈ 0.0036 or 0.36% (<a href="https://doi.org/10.1103/PRXQuantum.5.030352" className="text-blue-600 hover:underline">circuit-level noise</a>)</li>
+            </ul>
+            <p className="mt-2 text-sm text-gray-500">Color code formula for triangular honeycomb (6.6.6) patches. Steane code [[7,1,3]] is the d=3 member.</p>
           </div>
           <p><b>LFR:</b> probability that any of the logical qubits fails per code cycle</p>
         </div>
