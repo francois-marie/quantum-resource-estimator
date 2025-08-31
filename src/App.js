@@ -553,50 +553,66 @@ const QuantumCalculator = () => {
           <Line
             data={{
               datasets: [
-                {
-                  label: `${codeLibrary['surface'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(75, 192, 192)',
-                  backgroundColor: 'rgba(75, 192, 192, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
-                {
-                  label: `${codeLibrary['hypergraph'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(255, 99, 132)',
-                  backgroundColor: 'rgba(255, 99, 132, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
-                {
-                  label: `${codeLibrary['lifted'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(255, 159, 64)',
-                  backgroundColor: 'rgba(255, 159, 64, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
-                {
-                  label: `${codeLibrary['color'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('color', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
-                  borderColor: 'rgb(147, 51, 234)',
-                  backgroundColor: 'rgba(147, 51, 234, 0.1)',
-                  tension: 0.1,
-                  showLine: true
-                },
+                (() => {
+                  const surfaceData = generatePlotData('surface', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['surface'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: surfaceData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: surfaceData.nValues[i],
+                      k: surfaceData.kValues[i]
+                    })),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
+                (() => {
+                  const hypergraphData = generatePlotData('hypergraph', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['hypergraph'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: hypergraphData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: hypergraphData.nValues[i],
+                      k: hypergraphData.kValues[i]
+                    })),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
+                (() => {
+                  const liftedData = generatePlotData('lifted', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['lifted'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: liftedData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: liftedData.nValues[i],
+                      k: liftedData.kValues[i]
+                    })),
+                    borderColor: 'rgb(255, 159, 64)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
+                (() => {
+                  const colorData = generatePlotData('color', inputs.epsilon_L, inputs.k);
+                  return {
+                    label: `${codeLibrary['color'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                    data: colorData?.pValues.map((p, i) => ({
+                      x: p,
+                      y: colorData.nValues[i],
+                      k: colorData.kValues[i]
+                    })),
+                    borderColor: 'rgb(147, 51, 234)',
+                    backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                    tension: 0.1,
+                    showLine: true
+                  };
+                })(),
                 // Vertical threshold lines
                 {
                   label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
