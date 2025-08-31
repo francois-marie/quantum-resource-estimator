@@ -8,6 +8,7 @@ An interactive web tool for estimating quantum computing resource requirements w
   - Surface Code
   - Hypergraph Product Code
   - Lifted Product Code
+  - Color Code
 
 - **Interactive Calculator:**
   - Adjustable parameters for physical error rate (p)
@@ -43,6 +44,13 @@ An interactive web tool for estimating quantum computing resource requirements w
 - Threshold ≈ 0.66%
 
 Reference for HGP and LP codes: [Constant-Overhead Fault-Tolerant Quantum Computation with Reconfigurable Atom Arrays (Xu et al., 2023)](https://arxiv.org/abs/2308.08648v1)
+
+### Color Code
+- LFR(color) = 0.03k(p/0.0036)^⌈d/2⌉
+- Threshold ≈ 0.36% (circuit-level noise)
+- d ≈ √(n/k) for triangular honeycomb (6.6.6) patches
+
+Formula for triangular color code patches. Steane code [[7,1,3]] is the d=3 member. Uses the same functional form as surface code but with [lower threshold for circuit-level noise](https://doi.org/10.1103/PRXQuantum.5.030352).
 
 ## Getting Started
 
