@@ -568,6 +568,17 @@ const QuantumCalculator = () => {
                   tension: 0.1,
                   showLine: true
                 },
+                {
+                  label: `${codeLibrary['color'].name} (ε_L = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
+                    x: p,
+                    y: generatePlotData('color', inputs.epsilon_L, inputs.k)?.nValues[i]
+                  })),
+                  borderColor: 'rgb(147, 51, 234)',
+                  backgroundColor: 'rgba(147, 51, 234, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
                 // Vertical threshold lines
                 {
                   label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
@@ -605,6 +616,20 @@ const QuantumCalculator = () => {
                   ],
                   borderColor: 'rgb(255, 159, 64)',
                   backgroundColor: 'rgb(255, 159, 64)',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  pointRadius: 0,
+                  showLine: true,
+                  tension: 0
+                },
+                {
+                  label: `Color Code Threshold (${(codeLibrary['color'].threshold * 100).toFixed(2)}%)`,
+                  data: [
+                    { x: codeLibrary['color'].threshold, y: 10 },
+                    { x: codeLibrary['color'].threshold, y: 100 }
+                  ],
+                  borderColor: 'rgb(147, 51, 234)',
+                  backgroundColor: 'rgb(147, 51, 234)',
                   borderWidth: 2,
                   borderDash: [5, 5],
                   pointRadius: 0,
