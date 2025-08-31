@@ -684,6 +684,7 @@ const QuantumCalculator = () => {
             <li><span style={{color: 'rgb(75, 192, 192)'}} className="font-medium">Surface Code:</span> p_th = {(codeLibrary['surface'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(255, 99, 132)'}} className="font-medium">Hypergraph Product Code:</span> p_th = {(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> p_th = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> p_th = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
           </ul>
           <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold - this is why the curves end at these lines.</p>
         </div>
@@ -944,6 +945,19 @@ const QuantumCalculator = () => {
               <li>Threshold ≈ 0.0066 or 0.66%</li>
             </ul>
             <p className="mt-2 text-sm text-gray-500">Source for HGP and LP codes: <a href="https://arxiv.org/abs/2308.08648v1" className="text-blue-600 hover:underline">Constant-Overhead Fault-Tolerant Quantum Computation with Reconfigurable Atom Arrays (Xu et al., 2023)</a></p>
+          </div>
+
+          <div>
+            <p><b>Color Code:</b> LFR(color) = 0.03k(p/0.0036)^⌈d/2⌉</p>
+            <p>Where:</p>
+            <ul className="list-disc pl-6 mt-2">
+              <li>LFR = Logical Failure Rate (ε_L)</li>
+              <li>k = Number of logical qubits</li>
+              <li>p = Physical error probability</li>
+              <li>d = Code distance, approximately √(n/k) for triangular color codes</li>
+              <li>Threshold ≈ 0.0036 or 0.36% (<a href="https://doi.org/10.1103/PRXQuantum.5.030352" className="text-blue-600 hover:underline">circuit-level noise</a>)</li>
+            </ul>
+            <p className="mt-2 text-sm text-gray-500">Color code formula for triangular honeycomb (6.6.6) patches. Steane code [[7,1,3]] is the d=3 member.</p>
           </div>
           <p><b>LFR:</b> probability that any of the logical qubits fails per code cycle</p>
         </div>
