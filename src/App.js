@@ -727,7 +727,16 @@ const QuantumCalculator = () => {
             <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> p_th = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> p_th = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
           </ul>
-          <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold - this is why the curves end at these lines.</p>
+          <p className="mt-2 text-xs italic">Note: The vertical dashed lines show each code's threshold. No quantum error correction code can work when the physical error rate exceeds its threshold, this is why the curves end at these lines.</p>
+          <div className="mt-4 p-3 bg-blue-50 rounded">
+            <p className="text-sm text-blue-800 font-medium mb-2">Logical Qubits Encoded by Each Code:</p>
+            <p className="text-xs text-blue-700">
+              • <strong>Surface and Color Codes:</strong> Encode k = 1 logical qubit per code block.<br/>
+              • <strong>Hypergraph Product Code (HGP):</strong> Encodes k ≥ 0.04n logical qubits (we use k = 0.04n).<br/>
+              • <strong>Lifted Product Code (LP):</strong> Encodes k ≈ 0.38n^0.85 logical qubits.<br/>
+              <strong>Hover over data points</strong> to see the number of logical qubits (k) and physical qubits (n) for each code.
+            </p>
+          </div>
         </div>
       </div>
       
