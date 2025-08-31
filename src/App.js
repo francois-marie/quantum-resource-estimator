@@ -122,6 +122,32 @@ const QuantumCalculator = () => {
         return result;
       }
     },
+    color: {
+      name: 'Color Code',
+      threshold: 0.0036, // 0.36% (circuit-level noise)
+      calculateParams: (params) => {
+        let result = {};
+        const p_ratio = params.p / 0.0036; // Using circuit-level threshold
+        
+        // Calculate code distance based on number of data qubits per logical qubit
+        // For triangular honeycomb (6.6.6) color codes, d ≈ √(n/k)
+        result.d = Math.floor(Math.sqrt(params.n / params.k));
+        
+        // Calculate number of ancilla qubits for all logical qubits
+        // Using similar structure to surface code for consistency
+        result.n_ancilla = params.k * (Math.pow(result.d - 1, 2) + 2 * (result.d - 1));
+        
+        // Calculate logical error rate using the color code formula
+        // LFR_color ≈ A * k * (p/p_th_color)^⌈d/2⌉
+        result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, Math.ceil(result.d / 2));
+        
+        // Always include k and n in results
+        result.k = params.k;
+        result.n = params.n;
+        
+        return result;
+      }
+    },
     hypergraph: {
       name: 'Hypergraph Product Code',
       threshold: 0.006, // 0.6%
