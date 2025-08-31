@@ -274,6 +274,7 @@ const QuantumCalculator = () => {
     const threshold = selectedCode.threshold;
     const pValues = [];
     const nValues = [];
+    const kValues = []; // Store k values for tooltip
 
     // Generate 50 points from 1e-6 to threshold (stopping at threshold)
     for (let i = 0; i < 50; i++) {
@@ -321,12 +322,29 @@ const QuantumCalculator = () => {
         break; // Stop generating points when we need too many qubits
       }
 
-      nValues.push(bestResult ? bestResult.n : n);
+      const physicalQubits = bestResult ? bestResult.n : n;
+      
+      // Calculate number of logical qubits based on code type
+      let logicalQubits;
+      if (code === 'hypergraph') {
+        // For HGP codes, k >= 0.04n, so we use k = 0.04n
+        logicalQubits = Math.max(1, Math.floor(0.04 * physicalQubits));
+      } else if (code === 'lifted') {
+        // For LP codes, k ≈ 0.38n^0.85
+        logicalQubits = Math.max(1, Math.floor(0.38 * Math.pow(physicalQubits, 0.85)));
+      } else {
+        // Surface and Color codes encode 1 logical qubit
+        logicalQubits = 1;
+      }
+
+      nValues.push(physicalQubits);
+      kValues.push(logicalQubits);
     }
 
     return {
       pValues,
       nValues,
+      kValues,
       threshold
     };
   };
