@@ -187,7 +187,7 @@ const QuantumCalculator = () => {
         const p_ratio = params.p / 0.0036; // Using circuit-level threshold
         
         // Calculate code distance based on number of data qubits per logical qubit
-        // For triangular honeycomb (6.6.6) color codes, d ≈ √(n/k)
+        // For triangular honeycomb (6.6.6) color codes, d approximately equals sqrt(n/k)
         result.d = Math.floor(Math.sqrt(params.n / params.k));
         
         // Calculate number of ancilla qubits for all logical qubits
@@ -195,7 +195,7 @@ const QuantumCalculator = () => {
         result.n_ancilla = params.k * (Math.pow(result.d - 1, 2) + 2 * (result.d - 1));
         
         // Calculate logical error rate using the color code formula
-        // LFR_color ≈ A * k * (p/p_th_color)^⌈d/2⌉
+        // LFR_color approximately equals A * k * (p/p_th_color)^ceil(d/2)
         result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, Math.ceil(result.d / 2));
         
         // Always include k and n in results
@@ -457,10 +457,10 @@ const QuantumCalculator = () => {
         // For HGP codes, k >= 0.04n, so we use k = 0.04n
         logicalQubits = Math.max(1, Math.floor(0.04 * physicalQubits));
       } else if (code === 'lifted') {
-        // For LP codes, k ≈ 0.38n^0.85
+        // For LP codes, k approximately equals 0.38n^0.85
         logicalQubits = Math.max(1, Math.floor(0.38 * Math.pow(physicalQubits, 0.85)));
       } else {
-        // Surface and Color codes encode 1 logical qubit
+        // Surface, Yoked Surface, and Color codes encode 1 logical qubit
         logicalQubits = 1;
       }
 
@@ -697,10 +697,14 @@ const QuantumCalculator = () => {
               datasets: [
                 {
                     label: `${codeLibrary['surface'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('surface', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(75, 192, 192)',
                   backgroundColor: 'rgba(75, 192, 192, 0.1)',
                   tension: 0.1,
@@ -708,10 +712,14 @@ const QuantumCalculator = () => {
                 },
                 {
                     label: `${codeLibrary['hypergraph'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('hypergraph', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(255, 99, 132)',
                   backgroundColor: 'rgba(255, 99, 132, 0.1)',
                   tension: 0.1,
@@ -719,10 +727,14 @@ const QuantumCalculator = () => {
                 },
                 {
                     label: `${codeLibrary['lifted'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('lifted', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(255, 159, 64)',
                   backgroundColor: 'rgba(255, 159, 64, 0.1)',
                   tension: 0.1,
@@ -730,10 +742,14 @@ const QuantumCalculator = () => {
                 },
                 {
                     label: `${codeLibrary['color'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('color', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('color', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(147, 51, 234)',
                   backgroundColor: 'rgba(147, 51, 234, 0.1)',
                   tension: 0.1,
