@@ -1,7 +1,7 @@
 # Quantum Error Correction Resource Estimator
 
 ![CI](https://github.com/francois-marie/quantum-resource-estimator/workflows/CI/badge.svg)
-![Tests](https://github.com/francois-marie/quantum-resource-estimator/workflows/Tests/badge.svg)
+![Test Suite](https://github.com/francois-marie/quantum-resource-estimator/workflows/Test%20Suite/badge.svg)
 ![Code Quality](https://github.com/francois-marie/quantum-resource-estimator/workflows/Code%20Quality/badge.svg)
 [![codecov](https://codecov.io/gh/francois-marie/quantum-resource-estimator/branch/main/graph/badge.svg)](https://codecov.io/gh/francois-marie/quantum-resource-estimator)
 
