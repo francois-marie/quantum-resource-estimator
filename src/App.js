@@ -1153,6 +1153,23 @@ const QuantumCalculator = () => {
           </div>
 
           <div>
+            <p className="font-bold mb-3">1D Yoked Surface Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{1D-yoked}} = 0.03 \cdot k \cdot \left(\frac{p}{0.011}\right)^{\lceil(\mu_{1D} \cdot \sqrt{n/k})/2\rceil}" />
+            </div>
+            <p className="mt-3">Where <InlineMath math="\mu_{1D} \approx 1.8" /> (conservative distance multiplier for 1D yoke)</p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-3">2D Yoked Surface Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{2D-yoked}} = 0.03 \cdot k \cdot \left(\frac{p}{0.011}\right)^{\lceil(\mu_{2D} \cdot \sqrt{n/k})/2\rceil}" />
+            </div>
+            <p className="mt-3">Where <InlineMath math="\mu_{2D} \approx 3.2" /> (conservative distance multiplier for 2D yoke)</p>
+            <p className="mt-2 text-sm text-gray-500">Yoked surface codes use outer parity checks to effectively increase the code distance. Source: <a href="https://arxiv.org/abs/2312.04522" className="text-blue-600 hover:underline">Yoked surface codes (Gidney et al., 2023)</a></p>
+          </div>
+
+          <div>
             <p className="font-bold mb-3">Hypergraph Product Code:</p>
             <div className="bg-gray-50 p-4 rounded border">
               <BlockMath math="\varepsilon_L^{\text{HGP}} = 0.07 \cdot \left(\frac{p}{0.006}\right)^{0.47 \cdot n^{0.27}}" />
