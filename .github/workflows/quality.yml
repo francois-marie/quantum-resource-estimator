@@ -1,0 +1,99 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check for security vulnerabilities
+      run: npm audit --audit-level=moderate
+      continue-on-error: true
+
+    - name: Run tests with coverage
+      run: npm test -- --coverage --watchAll=false --coverageReporters=text-lcov
+      env:
+        CI: true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage/lcov.info
+        flags: quality-check
+        fail_ci_if_error: false
+
+    - name: Check build
+      run: npm run build
+
+    - name: Validate package.json
+      run: npx --yes package-check
+
+    - name: Check for unused dependencies
+      run: npx --yes depcheck --ignores="@testing-library/*,web-vitals"
+      continue-on-error: true
+
+    - name: Bundle size check
+      run: |
+        npm run build
+        du -sh build/
+        echo "Build size:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        du -h build/ >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  performance:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build for performance testing
+      run: npm run build
+
+    - name: Run performance tests
+      run: |
+        # Simple performance check - measure test execution time
+        echo "## Performance Metrics 📊" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        start_time=$(date +%s)
+        npm test -- --watchAll=false >/dev/null 2>&1
+        end_time=$(date +%s)
+        
+        test_duration=$((end_time - start_time))
+        echo "- Test execution time: ${test_duration}s" >> $GITHUB_STEP_SUMMARY
+        
+        # Build size analysis
+        build_size=$(du -sh build/ | cut -f1)
+        echo "- Build size: ${build_size}" >> $GITHUB_STEP_SUMMARY 
