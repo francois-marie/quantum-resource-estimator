@@ -1,5 +1,10 @@
 # Quantum Error Correction Resource Estimator
 
+![CI](https://github.com/francois-marie/quantum-resource-estimator/workflows/CI/badge.svg)
+![Test Suite](https://github.com/francois-marie/quantum-resource-estimator/workflows/Test%20Suite/badge.svg)
+![Code Quality](https://github.com/francois-marie/quantum-resource-estimator/workflows/Code%20Quality/badge.svg)
+[![codecov](https://codecov.io/gh/francois-marie/quantum-resource-estimator/branch/main/graph/badge.svg)](https://codecov.io/gh/francois-marie/quantum-resource-estimator)
+
 An interactive web tool for estimating quantum computing resource requirements with different error correction codes. This tool helps researchers and engineers understand the physical qubit requirements for fault-tolerant quantum computation across different regimes.
 
 ## Features
@@ -78,6 +83,40 @@ npm start
 ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000)
+
+## Testing
+
+This project includes comprehensive test coverage with 90+ tests covering:
+
+- **Mathematical Calculations**: Validation of quantum error correction formulas
+- **Component Rendering**: UI components and user interactions
+- **Utility Functions**: Helper functions and edge cases
+- **Integration Tests**: Full application workflow testing
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run tests in watch mode for development
+npm test -- --watch
+```
+
+### Test Coverage
+
+Current test coverage includes:
+- ✅ Surface Code calculations and edge cases
+- ✅ Hypergraph Product Code formulas
+- ✅ Lifted Product Code algorithms
+- ✅ Color Code implementations
+- ✅ User interface interactions
+- ✅ URL parameter handling
+- ✅ Plot data generation
+- ✅ Mathematical constants validation
 
 ## Deployment
 
