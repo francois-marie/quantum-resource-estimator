@@ -770,6 +770,21 @@ const QuantumCalculator = () => {
                   tension: 0.1,
                   showLine: true
                 },
+                {
+                    label: `${codeLibrary['yoked_2d'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('yoked_2d', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('yoked_2d', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
+                  borderColor: 'rgb(16, 185, 129)',
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
                 // Vertical threshold lines
                 {
                   label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
