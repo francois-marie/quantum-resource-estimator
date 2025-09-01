@@ -125,6 +125,33 @@ const QuantumCalculator = () => {
         return result;
       }
     },
+    yoked_1d: {
+      name: '1D Yoked Surface Code',
+      threshold: 0.011, // Same as surface code - inner patches behave like surface codes
+      calculateParams: (params) => {
+        let result = {};
+        const p_ratio = params.p / 0.011;
+        
+        // Calculate inner patch distance
+        const d_in = Math.floor(Math.sqrt(params.n / params.k));
+        
+        // Effective distance with 1D yoke: ~2x multiplier (conservative: 1.8)
+        const mu_1d = 1.8;
+        result.d = Math.floor(mu_1d * d_in);
+        
+        // Ancilla qubits calculation (similar to surface code but with yoke overhead)
+        // Adding ~20% overhead for yoke connections
+        result.n_ancilla = params.k * (Math.pow(d_in - 1, 2) + 2 * (d_in - 1)) * 1.2;
+        
+        // Calculate logical error rate with effective distance
+        result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, Math.ceil(result.d / 2));
+        
+        result.k = params.k;
+        result.n = params.n;
+        
+        return result;
+      }
+    },
     color: {
       name: 'Color Code',
       threshold: 0.0036, // 0.36% (circuit-level noise)
