@@ -787,7 +787,7 @@ const QuantumCalculator = () => {
                 },
                 // Vertical threshold lines
                 {
-                  label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
+                  label: `Surface/Yoked Codes Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
                   data: [
                     { x: codeLibrary['surface'].threshold, y: 10 },
                     { x: codeLibrary['surface'].threshold, y: 100 }
@@ -877,7 +877,7 @@ const QuantumCalculator = () => {
                       const codeName = context.dataset.label.split(' (')[0];
                       const p = context.parsed.x.toExponential(1);
                       const n = context.parsed.y.toExponential(1);
-                      const k = context.raw.k.toExponential(1) || 1;
+                      const k = (context.raw && context.raw.k) ? context.raw.k.toExponential(1) : '1';
                       return `${codeName}: p = ${p}, n = ${n} physical qubits, k = ${k} logical qubits`;
                     }
                   }
@@ -895,6 +895,8 @@ const QuantumCalculator = () => {
           <h3 className="font-semibold mb-2">Code Thresholds (Vertical Dashed Lines):</h3>
           <ul className="list-disc pl-5 space-y-1">
             <li><span style={{color: 'rgb(75, 192, 192)'}} className="font-medium">Surface Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['surface'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(34, 197, 94)'}} className="font-medium">1D Yoked Surface Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['yoked_1d'].threshold * 100).toFixed(2)}% (same as surface code)</li>
+            <li><span style={{color: 'rgb(16, 185, 129)'}} className="font-medium">2D Yoked Surface Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['yoked_2d'].threshold * 100).toFixed(2)}% (same as surface code)</li>
             <li><span style={{color: 'rgb(255, 99, 132)'}} className="font-medium">Hypergraph Product Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
@@ -903,10 +905,11 @@ const QuantumCalculator = () => {
           <div className="mt-4 p-3 bg-blue-50 rounded">
             <p className="text-sm text-blue-800 font-medium mb-2">Logical Qubits Encoded by Each Code:</p>
             <p className="text-xs text-blue-700">
-              • <strong>Surface and Color Codes:</strong> Encode k = 1 logical qubit per code block.<br/>
-              • <strong>Hypergraph Product Code (HGP):</strong> Encodes k ≥ 0.04n logical qubits (we use k = 0.04n).<br/>
-              • <strong>Lifted Product Code (LP):</strong> Encodes k ≈ 0.38n^0.85 logical qubits.<br/>
-              <strong>Hover over data points</strong> to see the number of logical qubits (k) and physical qubits (n) for each code.
+              - <strong>Surface, Yoked Surface, and Color Codes:</strong> Encode <InlineMath math="k = 1" /> logical qubit per code block.<br/>
+              - <strong>Yoked Surface Codes:</strong> Use outer parity checks to effectively increase code distance (1D: ~1.8x, 2D: ~3.2x) for better error suppression.<br/>
+              - <strong>Hypergraph Product Code (HGP):</strong> Encodes <InlineMath math="k \geq 0.04 n" /> logical qubits (we use <InlineMath math="k = 0.04 n" />).<br/>
+              - <strong>Lifted Product Code (LP):</strong> Encodes <InlineMath math="k \approx 0.38n^{0.85}" /> logical qubits.<br/>
+              <strong>Hover over data points</strong> to see the number of logical qubits (<InlineMath math="k"/>) and physical qubits (<InlineMath math="n"/>) for each code.
             </p>
           </div>
         </div>
