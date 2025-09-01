@@ -125,6 +125,60 @@ const QuantumCalculator = () => {
         return result;
       }
     },
+    yoked_1d: {
+      name: '1D Yoked Surface Code',
+      threshold: 0.011, // Same as surface code - inner patches behave like surface codes
+      calculateParams: (params) => {
+        let result = {};
+        const p_ratio = params.p / 0.011;
+        
+        // Calculate inner patch distance
+        const d_in = Math.floor(Math.sqrt(params.n / params.k));
+        
+        // Effective distance with 1D yoke: ~2x multiplier (conservative: 1.8)
+        const mu_1d = 1.8;
+        result.d = Math.floor(mu_1d * d_in);
+        
+        // Ancilla qubits calculation (similar to surface code but with yoke overhead)
+        // Adding ~20% overhead for yoke connections
+        result.n_ancilla = params.k * (Math.pow(d_in - 1, 2) + 2 * (d_in - 1)) * 1.2;
+        
+        // Calculate logical error rate with effective distance
+        result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, Math.ceil(result.d / 2));
+        
+        result.k = params.k;
+        result.n = params.n;
+        
+        return result;
+      }
+    },
+    yoked_2d: {
+      name: '2D Yoked Surface Code',
+      threshold: 0.011, // Same as surface code
+      calculateParams: (params) => {
+        let result = {};
+        const p_ratio = params.p / 0.011;
+        
+        // Calculate inner patch distance
+        const d_in = Math.floor(Math.sqrt(params.n / params.k));
+        
+        // Effective distance with 2D yoke: ~4x multiplier (conservative: 3.2)
+        const mu_2d = 3.2;
+        result.d = Math.floor(mu_2d * d_in);
+        
+        // Ancilla qubits calculation with higher yoke overhead for 2D
+        // Adding ~50% overhead for 2D yoke connections
+        result.n_ancilla = params.k * (Math.pow(d_in - 1, 2) + 2 * (d_in - 1)) * 1.5;
+        
+        // Calculate logical error rate with effective distance
+        result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, Math.ceil(result.d / 2));
+        
+        result.k = params.k;
+        result.n = params.n;
+        
+        return result;
+      }
+    },
     color: {
       name: 'Color Code',
       threshold: 0.0036, // 0.36% (circuit-level noise)
@@ -133,7 +187,7 @@ const QuantumCalculator = () => {
         const p_ratio = params.p / 0.0036; // Using circuit-level threshold
         
         // Calculate code distance based on number of data qubits per logical qubit
-        // For triangular honeycomb (6.6.6) color codes, d ≈ √(n/k)
+        // For triangular honeycomb (6.6.6) color codes, d approximately equals sqrt(n/k)
         result.d = Math.floor(Math.sqrt(params.n / params.k));
         
         // Calculate number of ancilla qubits for all logical qubits
@@ -141,7 +195,7 @@ const QuantumCalculator = () => {
         result.n_ancilla = params.k * (Math.pow(result.d - 1, 2) + 2 * (result.d - 1));
         
         // Calculate logical error rate using the color code formula
-        // LFR_color ≈ A * k * (p/p_th_color)^⌈d/2⌉
+        // LFR_color approximately equals A * k * (p/p_th_color)^ceil(d/2)
         result.epsilon_L = 0.03 * params.k * Math.pow(p_ratio, Math.ceil(result.d / 2));
         
         // Always include k and n in results
@@ -403,10 +457,10 @@ const QuantumCalculator = () => {
         // For HGP codes, k >= 0.04n, so we use k = 0.04n
         logicalQubits = Math.max(1, Math.floor(0.04 * physicalQubits));
       } else if (code === 'lifted') {
-        // For LP codes, k ≈ 0.38n^0.85
+        // For LP codes, k approximately equals 0.38n^0.85
         logicalQubits = Math.max(1, Math.floor(0.38 * Math.pow(physicalQubits, 0.85)));
       } else {
-        // Surface and Color codes encode 1 logical qubit
+        // Surface, Yoked Surface, and Color codes encode 1 logical qubit
         logicalQubits = 1;
       }
 
@@ -643,10 +697,14 @@ const QuantumCalculator = () => {
               datasets: [
                 {
                     label: `${codeLibrary['surface'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('surface', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('surface', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(75, 192, 192)',
                   backgroundColor: 'rgba(75, 192, 192, 0.1)',
                   tension: 0.1,
@@ -654,10 +712,14 @@ const QuantumCalculator = () => {
                 },
                 {
                     label: `${codeLibrary['hypergraph'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('hypergraph', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('hypergraph', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(255, 99, 132)',
                   backgroundColor: 'rgba(255, 99, 132, 0.1)',
                   tension: 0.1,
@@ -665,10 +727,14 @@ const QuantumCalculator = () => {
                 },
                 {
                     label: `${codeLibrary['lifted'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('lifted', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('lifted', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(255, 159, 64)',
                   backgroundColor: 'rgba(255, 159, 64, 0.1)',
                   tension: 0.1,
@@ -676,18 +742,52 @@ const QuantumCalculator = () => {
                 },
                 {
                     label: `${codeLibrary['color'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
-                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => ({
-                    x: p,
-                    y: generatePlotData('color', inputs.epsilon_L, inputs.k)?.nValues[i]
-                  })),
+                  data: generatePlotData('color', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('color', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
                   borderColor: 'rgb(147, 51, 234)',
                   backgroundColor: 'rgba(147, 51, 234, 0.1)',
                   tension: 0.1,
                   showLine: true
                 },
+                {
+                    label: `${codeLibrary['yoked_1d'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('yoked_1d', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('yoked_1d', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
+                  borderColor: 'rgb(34, 197, 94)',
+                  backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
+                {
+                    label: `${codeLibrary['yoked_2d'].name} (εₗ = ${inputs.epsilon_L.toExponential(1)})`,
+                  data: generatePlotData('yoked_2d', inputs.epsilon_L, inputs.k)?.pValues.map((p, i) => {
+                    const plotData = generatePlotData('yoked_2d', inputs.epsilon_L, inputs.k);
+                    return {
+                      x: p,
+                      y: plotData?.nValues[i],
+                      k: plotData?.kValues[i]
+                    };
+                  }),
+                  borderColor: 'rgb(16, 185, 129)',
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  tension: 0.1,
+                  showLine: true
+                },
                 // Vertical threshold lines
                 {
-                  label: `Surface Code Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
+                  label: `Surface/Yoked Codes Threshold (${(codeLibrary['surface'].threshold * 100).toFixed(2)}%)`,
                   data: [
                     { x: codeLibrary['surface'].threshold, y: 10 },
                     { x: codeLibrary['surface'].threshold, y: 100 }
@@ -777,7 +877,7 @@ const QuantumCalculator = () => {
                       const codeName = context.dataset.label.split(' (')[0];
                       const p = context.parsed.x.toExponential(1);
                       const n = context.parsed.y.toExponential(1);
-                      const k = context.raw.k.toExponential(1) || 1;
+                      const k = (context.raw && context.raw.k) ? context.raw.k.toExponential(1) : '1';
                       return `${codeName}: p = ${p}, n = ${n} physical qubits, k = ${k} logical qubits`;
                     }
                   }
@@ -795,6 +895,8 @@ const QuantumCalculator = () => {
           <h3 className="font-semibold mb-2">Code Thresholds (Vertical Dashed Lines):</h3>
           <ul className="list-disc pl-5 space-y-1">
             <li><span style={{color: 'rgb(75, 192, 192)'}} className="font-medium">Surface Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['surface'].threshold * 100).toFixed(2)}%</li>
+            <li><span style={{color: 'rgb(34, 197, 94)'}} className="font-medium">1D Yoked Surface Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['yoked_1d'].threshold * 100).toFixed(2)}% (same as surface code)</li>
+            <li><span style={{color: 'rgb(16, 185, 129)'}} className="font-medium">2D Yoked Surface Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['yoked_2d'].threshold * 100).toFixed(2)}% (same as surface code)</li>
             <li><span style={{color: 'rgb(255, 99, 132)'}} className="font-medium">Hypergraph Product Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['hypergraph'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(255, 159, 64)'}} className="font-medium">Lifted Product Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['lifted'].threshold * 100).toFixed(2)}%</li>
             <li><span style={{color: 'rgb(147, 51, 234)'}} className="font-medium">Color Code:</span> <InlineMath math="p_{\text{th}}" /> = {(codeLibrary['color'].threshold * 100).toFixed(2)}%</li>
@@ -803,10 +905,11 @@ const QuantumCalculator = () => {
           <div className="mt-4 p-3 bg-blue-50 rounded">
             <p className="text-sm text-blue-800 font-medium mb-2">Logical Qubits Encoded by Each Code:</p>
             <p className="text-xs text-blue-700">
-              • <strong>Surface and Color Codes:</strong> Encode k = 1 logical qubit per code block.<br/>
-              • <strong>Hypergraph Product Code (HGP):</strong> Encodes k ≥ 0.04n logical qubits (we use k = 0.04n).<br/>
-              • <strong>Lifted Product Code (LP):</strong> Encodes k ≈ 0.38n^0.85 logical qubits.<br/>
-              <strong>Hover over data points</strong> to see the number of logical qubits (k) and physical qubits (n) for each code.
+              - <strong>Surface, Yoked Surface, and Color Codes:</strong> Encode <InlineMath math="k = 1" /> logical qubit per code block.<br/>
+              - <strong>Yoked Surface Codes:</strong> Use outer parity checks to effectively increase code distance (1D: ~1.8x, 2D: ~3.2x) for better error suppression.<br/>
+              - <strong>Hypergraph Product Code (HGP):</strong> Encodes <InlineMath math="k \geq 0.04 n" /> logical qubits (we use <InlineMath math="k = 0.04 n" />).<br/>
+              - <strong>Lifted Product Code (LP):</strong> Encodes <InlineMath math="k \approx 0.38n^{0.85}" /> logical qubits.<br/>
+              <strong>Hover over data points</strong> to see the number of logical qubits (<InlineMath math="k"/>) and physical qubits (<InlineMath math="n"/>) for each code.
             </p>
           </div>
         </div>
@@ -1047,6 +1150,23 @@ const QuantumCalculator = () => {
               <li><InlineMath math="d" /> = Code distance, approximately <InlineMath math="\sqrt{n/k}" /> for surface code</li>
             </ul>
             <p className="mt-2 text-sm text-gray-500">Source: <a href="https://arxiv.org/abs/0910.4074" className="text-blue-600 hover:underline">Surface code quantum communication (Fowler et al., 2010)</a></p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-3">1D Yoked Surface Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{1D-yoked}} = 0.03 \cdot k \cdot \left(\frac{p}{0.011}\right)^{\lceil(\mu_{1D} \cdot \sqrt{n/k})/2\rceil}" />
+            </div>
+            <p className="mt-3">Where <InlineMath math="\mu_{1D} \approx 1.8" /> (conservative distance multiplier for 1D yoke)</p>
+          </div>
+
+          <div>
+            <p className="font-bold mb-3">2D Yoked Surface Code:</p>
+            <div className="bg-gray-50 p-4 rounded border">
+              <BlockMath math="\varepsilon_L^{\text{2D-yoked}} = 0.03 \cdot k \cdot \left(\frac{p}{0.011}\right)^{\lceil(\mu_{2D} \cdot \sqrt{n/k})/2\rceil}" />
+            </div>
+            <p className="mt-3">Where <InlineMath math="\mu_{2D} \approx 3.2" /> (conservative distance multiplier for 2D yoke)</p>
+            <p className="mt-2 text-sm text-gray-500">Yoked surface codes use outer parity checks to effectively increase the code distance. Source: <a href="https://arxiv.org/abs/2312.04522" className="text-blue-600 hover:underline">Yoked surface codes (Gidney et al., 2023)</a></p>
           </div>
 
           <div>
